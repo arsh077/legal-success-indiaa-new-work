@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -19,7 +18,8 @@ import {
   Phone,
   Mail,
   Calendar,
-  ExternalLink
+  ExternalLink,
+  MessageSquare
 } from 'lucide-react';
 import { User, Lead, LeadStatus, UserRole } from '../types';
 import Logo from '../components/Logo';
@@ -108,7 +108,8 @@ const Dashboard: React.FC<DashboardProps> = ({
   const filteredLeads = globalLeads.filter(l => {
     const matchesSearch = l.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                          l.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         l.service.toLowerCase().includes(searchQuery.toLowerCase());
+                         l.service.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         l.phone.includes(searchQuery);
     
     if (currentUser?.role === 'EMPLOYEE') {
       return matchesSearch && l.assignedTo === currentUser.id;
@@ -133,93 +134,109 @@ const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className="min-h-screen bg-[#F9FAFB] flex animate-in fade-in duration-700 relative overflow-hidden">
       
-      {/* LEAD DETAIL MODAL */}
+      {/* LEAD DETAIL MODAL - This opens when you click the circular button */}
       {selectedLead && (
-        <div className="fixed inset-0 z-[250] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white rounded-[3.5rem] w-full max-w-2xl p-12 shadow-2xl relative overflow-hidden">
-             {/* Modal Header Decoration */}
-             <div className="absolute top-0 left-0 w-full h-2 bg-black" />
+        <div className="fixed inset-0 z-[250] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-white rounded-[3.5rem] w-full max-w-2xl p-10 md:p-14 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.25)] relative overflow-hidden">
+             <div className="absolute top-0 left-0 w-full h-3 bg-black" />
              
              <button 
               onClick={() => setSelectedLead(null)}
-              className="absolute top-10 right-10 p-3 hover:bg-gray-100 rounded-full transition-colors"
+              className="absolute top-10 right-10 p-3 hover:bg-gray-100 rounded-full transition-all hover:rotate-90"
             >
               <X size={20} />
             </button>
 
             <div className="mb-12">
-              <div className="flex items-center gap-6 mb-8">
-                <div className="w-20 h-20 bg-black text-white rounded-[2rem] flex items-center justify-center font-bold text-3xl">
+              <div className="flex items-center gap-8 mb-10">
+                <div className="w-24 h-24 bg-black text-white rounded-[2.2rem] flex items-center justify-center font-bold text-4xl shadow-2xl shadow-black/10">
                   {selectedLead.name.charAt(0)}
                 </div>
                 <div>
-                   <h2 className="text-3xl font-bold tracking-tight mb-2">{selectedLead.name}</h2>
-                   <p className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.2em]">{selectedLead.service}</p>
+                   <h2 className="text-4xl font-black tracking-tighter mb-2 text-[#0B0B0B]">{selectedLead.name}</h2>
+                   <div className="flex items-center gap-3">
+                     <span className={`text-[9px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full border ${getStatusColor(selectedLead.status)}`}>
+                       {selectedLead.status.replace('_', ' ')}
+                     </span>
+                     <span className="text-gray-300 text-xs font-bold">•</span>
+                     <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">{selectedLead.service}</p>
+                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                 <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 bg-gray-50/50 p-10 rounded-[2.5rem] border border-gray-50">
+                 <div className="space-y-8">
                     <div>
-                      <label className="text-[9px] font-bold text-gray-300 uppercase tracking-widest block mb-2">Phone Number</label>
-                      <a href={`tel:${selectedLead.phone}`} className="flex items-center gap-3 text-lg font-bold text-black hover:underline group">
-                        <Phone size={18} className="text-gray-300 group-hover:text-black transition-colors" />
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-3">Mobile Number</label>
+                      <a href={`tel:${selectedLead.phone}`} className="flex items-center gap-4 text-xl font-bold text-black hover:text-blue-600 transition-colors group">
+                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-gray-100 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                          <Phone size={18} />
+                        </div>
                         {selectedLead.phone}
-                        <ExternalLink size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <ExternalLink size={14} className="opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
                       </a>
                     </div>
                     <div>
-                      <label className="text-[9px] font-bold text-gray-300 uppercase tracking-widest block mb-2">Email Address</label>
-                      <a href={`mailto:${selectedLead.email}`} className="flex items-center gap-3 text-lg font-bold text-black hover:underline group">
-                        <Mail size={18} className="text-gray-300 group-hover:text-black transition-colors" />
-                        {selectedLead.email}
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-3">Email Address</label>
+                      <a href={`mailto:${selectedLead.email}`} className="flex items-center gap-4 text-xl font-bold text-black hover:text-blue-600 transition-colors group">
+                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-gray-100 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                          <Mail size={18} />
+                        </div>
+                        <span className="truncate max-w-[200px]">{selectedLead.email}</span>
                       </a>
                     </div>
                  </div>
-                 <div className="space-y-6">
+                 <div className="space-y-8">
                     <div>
-                      <label className="text-[9px] font-bold text-gray-300 uppercase tracking-widest block mb-2">Created On</label>
-                      <div className="flex items-center gap-3 text-lg font-bold text-black">
-                        <Calendar size={18} className="text-gray-300" />
-                        {new Date(selectedLead.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-3">Inquiry Date</label>
+                      <div className="flex items-center gap-4 text-xl font-bold text-black">
+                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-gray-100">
+                          <Calendar size={18} />
+                        </div>
+                        {new Date(selectedLead.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                       </div>
                     </div>
                     <div>
-                      <label className="text-[9px] font-bold text-gray-300 uppercase tracking-widest block mb-2">Current Status</label>
-                      <div className="flex items-center gap-3">
-                        <div className={`w-3 h-3 rounded-full ${getStatusColor(selectedLead.status).split(' ')[1].replace('text-', 'bg-')}`} />
-                        <span className="font-bold text-black uppercase tracking-widest text-[11px]">{selectedLead.status.replace('_', ' ')}</span>
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-3">Internal Status</label>
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-gray-100">
+                          <ShieldAlert size={18} className="text-yellow-500" />
+                        </div>
+                        <span className="font-bold text-black uppercase tracking-widest text-[12px]">{selectedLead.status.replace('_', ' ')}</span>
                       </div>
                     </div>
                  </div>
               </div>
             </div>
 
-            <div className="border-t border-gray-100 pt-12 mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                {isAdmin && (
                   <div className="space-y-4">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Reassign Expert</label>
-                    <select 
-                      value={selectedLead.assignedTo || 'unassigned'}
-                      onChange={(e) => assignLead(selectedLead.id, e.target.value)}
-                      className="w-full p-5 bg-gray-50 border-none rounded-2xl text-[11px] font-bold uppercase tracking-widest focus:ring-1 focus:ring-black outline-none transition-all cursor-pointer"
-                    >
-                      <option value="unassigned">-- Unassigned --</option>
-                      {globalUsers.filter(u => u.role !== 'HEAD_ADMIN').map(user => (
-                        <option key={user.id} value={user.id}>{user.name}</option>
-                      ))}
-                    </select>
+                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1">Assign Expert</label>
+                    <div className="relative">
+                      <select 
+                        value={selectedLead.assignedTo || 'unassigned'}
+                        onChange={(e) => assignLead(selectedLead.id, e.target.value)}
+                        className="w-full p-6 bg-gray-50 border-none rounded-2xl text-[12px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-black outline-none transition-all cursor-pointer appearance-none"
+                      >
+                        <option value="unassigned">-- Unassigned --</option>
+                        {globalUsers.filter(u => u.role !== 'HEAD_ADMIN').map(user => (
+                          <option key={user.id} value={user.id}>{user.name}</option>
+                        ))}
+                      </select>
+                      <UserCheck className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none" size={18} />
+                    </div>
                   </div>
                )}
                <div className="space-y-4">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Update Progression</label>
+                  <label className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1">Update Pipeline</label>
                   <div className="flex flex-wrap gap-2">
                     {['NEW', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map((s) => (
                       <button 
                         key={s}
                         onClick={() => updateStatus(selectedLead.id, s as LeadStatus)}
-                        className={`px-6 py-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
-                          selectedLead.status === s ? 'bg-black text-white shadow-xl shadow-black/10' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+                        className={`px-5 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                          selectedLead.status === s ? 'bg-black text-white shadow-xl shadow-black/20' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
                         }`}
                       >
                         {s.replace('_', ' ')}
@@ -227,6 +244,13 @@ const Dashboard: React.FC<DashboardProps> = ({
                     ))}
                   </div>
                </div>
+            </div>
+            
+            <div className="mt-12 text-center">
+               <button className="flex items-center gap-3 mx-auto text-[11px] font-black uppercase tracking-[0.25em] text-gray-300 hover:text-black transition-colors">
+                  <MessageSquare size={16} />
+                  Add Internal Note
+               </button>
             </div>
           </div>
         </div>
@@ -273,7 +297,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <select 
                   value={newUser.role}
                   onChange={(e) => setNewUser({...newUser, role: e.target.value as UserRole})}
-                  className="w-full bg-gray-50 border-none rounded-2xl p-5 outline-none focus:ring-1 focus:ring-black appearance-none"
+                  className="w-full bg-gray-50 border-none rounded-2xl p-5 outline-none focus:ring-1 focus:ring-black appearance-none cursor-pointer"
                 >
                   <option value="EMPLOYEE">Employee (Assigned Leads Only)</option>
                   <option value="ADMIN">Admin (All Leads + Assignment)</option>
@@ -290,17 +314,6 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>
       )}
 
-      {/* FLOATING HAMBURGER */}
-      <button 
-        onClick={() => setIsSidebarVisible(!isSidebarVisible)}
-        className={`fixed top-8 left-8 z-[110] p-4 bg-white border border-gray-100 rounded-2xl shadow-2xl hover:bg-black hover:text-white transition-all duration-500 ease-out group ${
-          isSidebarVisible ? 'opacity-0 scale-90 pointer-events-none' : 'opacity-100 scale-100'
-        }`}
-        aria-label="Toggle Menu"
-      >
-        <Menu size={20} className="group-hover:rotate-90 transition-transform duration-500" />
-      </button>
-
       {/* SIDEBAR */}
       <aside 
         className={`fixed left-0 top-0 h-full bg-white border-r border-gray-100 z-[100] transition-all duration-700 cubic-bezier(0.16, 1, 0.3, 1) ${
@@ -310,12 +323,12 @@ const Dashboard: React.FC<DashboardProps> = ({
         <div className="w-80 p-10 h-full flex flex-col">
           <div className="mb-16 flex items-center justify-between">
             <div className="flex flex-col">
-              <span className="font-bold text-xl tracking-tighter text-[#0B0B0B]">LSI. PORTAL</span>
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-1">{currentUser.role.replace('_', ' ')}</span>
+              <span className="font-black text-2xl tracking-tighter text-[#0B0B0B]">LSI. PORTAL</span>
+              <span className="text-[10px] font-black text-gray-300 uppercase tracking-[0.25em] mt-1">{currentUser.role.replace('_', ' ')}</span>
             </div>
             <button 
               onClick={() => setIsSidebarVisible(false)}
-              className="p-2 hover:bg-gray-50 rounded-xl transition-all text-gray-300 hover:text-black"
+              className="p-2 hover:bg-gray-50 rounded-xl transition-all text-gray-200 hover:text-black"
             >
               <ChevronLeft size={20} />
             </button>
@@ -324,8 +337,8 @@ const Dashboard: React.FC<DashboardProps> = ({
           <nav className="flex-grow space-y-3">
             <button 
               onClick={() => setActiveTab('leads')}
-              className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-bold text-[11px] uppercase tracking-widest transition-all duration-500 ${
-                activeTab === 'leads' ? 'bg-black text-white shadow-xl shadow-black/10' : 'text-gray-400 hover:bg-gray-50 hover:text-black'
+              className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.15em] transition-all duration-500 ${
+                activeTab === 'leads' ? 'bg-black text-white shadow-2xl shadow-black/10' : 'text-gray-400 hover:bg-gray-50 hover:text-black'
               }`}
             >
               <LayoutDashboard size={18} />
@@ -334,15 +347,15 @@ const Dashboard: React.FC<DashboardProps> = ({
             {isAdmin && (
               <button 
                 onClick={() => setActiveTab('users')}
-                className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-bold text-[11px] uppercase tracking-widest transition-all duration-500 ${
-                  activeTab === 'users' ? 'bg-black text-white shadow-xl shadow-black/10' : 'text-gray-400 hover:bg-gray-50 hover:text-black'
+                className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.15em] transition-all duration-500 ${
+                  activeTab === 'users' ? 'bg-black text-white shadow-2xl shadow-black/10' : 'text-gray-400 hover:bg-gray-50 hover:text-black'
                 }`}
               >
                 <Users size={18} />
                 Team
               </button>
             )}
-            <button className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-bold text-[11px] uppercase tracking-widest text-gray-400 hover:bg-gray-50 hover:text-black transition-all">
+            <button className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.15em] text-gray-400 hover:bg-gray-50 hover:text-black transition-all">
               <Settings size={18} />
               Config
             </button>
@@ -354,13 +367,13 @@ const Dashboard: React.FC<DashboardProps> = ({
                 {currentUser.name.charAt(0)}
               </div>
               <div className="overflow-hidden">
-                <div className="text-sm font-bold truncate text-[#0B0B0B]">{currentUser.name}</div>
-                <div className="text-[9px] text-gray-400 truncate uppercase tracking-widest font-bold">Authenticated</div>
+                <div className="text-sm font-black truncate text-[#0B0B0B]">{currentUser.name}</div>
+                <div className="text-[9px] text-gray-400 truncate uppercase tracking-[0.15em] font-bold">Authorized</div>
               </div>
             </div>
             <button 
               onClick={handleLogout}
-              className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-bold text-[11px] uppercase tracking-widest text-red-500 hover:bg-red-50 transition-all"
+              className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.15em] text-red-500 hover:bg-red-50 transition-all"
             >
               <LogOut size={18} />
               Logout
@@ -377,40 +390,46 @@ const Dashboard: React.FC<DashboardProps> = ({
             : 'px-12 md:px-24 pt-12 md:pt-32'
         }`}
       >
-        <div className={`max-w-7xl mx-auto transition-all duration-1000 ${isSidebarVisible ? 'scale-[0.98]' : 'scale-100'}`}>
+        {/* HAMBURGER TRIGGER */}
+        {!isSidebarVisible && (
+          <button 
+            onClick={() => setIsSidebarVisible(true)}
+            className="fixed top-8 left-8 z-[110] p-4 bg-white border border-gray-100 rounded-2xl shadow-2xl hover:bg-black hover:text-white transition-all group"
+          >
+            <Menu size={20} className="group-hover:rotate-90 transition-transform" />
+          </button>
+        )}
+
+        <div className={`max-w-7xl mx-auto pb-32 transition-all duration-1000 ${isSidebarVisible ? 'scale-[0.98]' : 'scale-100'}`}>
           
-          {/* Dashboard Header Container */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10 mb-20">
-            <div className="flex flex-col gap-6">
-              <div className="opacity-40 hover:opacity-100 transition-opacity">
+            <div>
+              <div className="mb-10 opacity-30 hover:opacity-100 transition-opacity">
                  <Logo className="h-6" />
               </div>
-              
-              <div>
-                <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-[#0B0B0B] leading-none">
-                  {activeTab === 'leads' ? 'Real-time Pipeline' : 'Our Experts'}
-                </h1>
-                <p className="text-[#9CA3AF] mt-4 font-medium text-lg md:text-xl max-w-xl">
-                  {activeTab === 'leads' 
-                    ? `Currently viewing ${filteredLeads.length} active inquiries.` 
-                    : `Your team of specialized legal consultants.`}
-                </p>
-              </div>
+              <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-[#0B0B0B] leading-[0.9]">
+                {activeTab === 'leads' ? 'Real-time Pipeline' : 'The Legal Team'}
+              </h1>
+              <p className="text-gray-400 mt-6 font-bold text-lg md:text-xl max-w-xl uppercase tracking-tighter">
+                {activeTab === 'leads' 
+                  ? `Active Flow: ${filteredLeads.length} items requiring attention.` 
+                  : `Managing access for ${globalUsers.length} compliance experts.`}
+              </p>
             </div>
 
             <div className="flex items-center gap-4">
-               <button className="p-6 bg-white border border-gray-100 rounded-2xl text-gray-400 hover:text-black transition-all shadow-sm">
-                 <Bell size={22} />
+               <button className="p-6 bg-white border border-gray-100 rounded-[1.5rem] text-gray-300 hover:text-black transition-all shadow-sm">
+                 <Bell size={24} />
                </button>
                {activeTab === 'users' && currentUser.role === 'HEAD_ADMIN' && (
                 <button 
                   onClick={() => setIsAddUserModalOpen(true)}
-                  className="bg-[#1D222B] text-white px-10 py-5 rounded-[2.2rem] font-bold text-[11px] uppercase tracking-widest flex items-center gap-6 hover:bg-black transition-all shadow-2xl shadow-black/10 group h-20"
+                  className="bg-[#1D222B] text-white px-12 py-5 rounded-[2.2rem] font-black text-[11px] uppercase tracking-[0.2em] flex items-center gap-6 hover:bg-black transition-all shadow-2xl shadow-black/10 group h-20"
                 >
-                  <UserPlus size={24} className="group-hover:scale-110 transition-transform" />
-                  <div className="text-left">
-                    <div className="leading-none mb-1">ADD TEAM</div>
-                    <div className="opacity-40 text-[9px] font-black">MEMBER</div>
+                  <UserPlus size={26} className="group-hover:scale-110 transition-transform" />
+                  <div className="text-left leading-none">
+                    <div>ADD NEW</div>
+                    <div className="opacity-40 mt-1">EXPERT</div>
                   </div>
                 </button>
               )}
@@ -418,66 +437,68 @@ const Dashboard: React.FC<DashboardProps> = ({
           </div>
 
           {activeTab === 'leads' && (
-            <div className="space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700">
+            <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
               
-              {/* Quick Filters */}
               <div className="flex flex-col md:flex-row gap-4 items-stretch">
                 <div className="relative flex-grow">
-                  <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-gray-300" size={24} />
                   <input 
                     type="text" 
-                    placeholder="Search by client, email or specific service..."
+                    placeholder="Search by client name, mobile number or email..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-white border border-gray-100 rounded-[2.2rem] py-6 pl-16 pr-8 focus:ring-1 focus:ring-black outline-none transition-all shadow-sm text-sm"
+                    className="w-full bg-white border border-gray-100 rounded-[2.5rem] py-7 pl-20 pr-10 focus:ring-2 focus:ring-black outline-none transition-all shadow-sm text-sm font-medium"
                   />
                 </div>
-                <button className="flex items-center justify-center gap-3 px-10 py-6 bg-white border border-gray-100 rounded-[2.2rem] text-gray-500 font-bold text-[11px] uppercase tracking-widest hover:text-black hover:border-black transition-all shadow-sm">
-                  <Filter size={18} />
-                  Filters
+                <button className="flex items-center justify-center gap-4 px-12 py-7 bg-white border border-gray-100 rounded-[2.5rem] text-gray-400 font-black text-[11px] uppercase tracking-[0.2em] hover:text-black hover:border-black transition-all shadow-sm">
+                  <Filter size={20} />
+                  Pipeline Filter
                 </button>
               </div>
 
-              {/* Data Visualization / List */}
-              <div className="grid grid-cols-1 gap-6 pb-24">
+              <div className="grid grid-cols-1 gap-6">
                 {filteredLeads.map((lead, idx) => (
                   <div 
                     key={lead.id} 
-                    className="bg-white border border-gray-50 rounded-[3.2rem] p-10 hover:shadow-2xl hover:shadow-black/5 transition-all duration-700 flex flex-col md:flex-row items-center justify-between gap-10 group"
+                    className="bg-white border border-gray-50 rounded-[3.5rem] p-10 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] transition-all duration-700 flex flex-col md:flex-row items-center justify-between gap-10 group relative overflow-hidden"
                     style={{ animationDelay: `${idx * 100}ms` }}
                   >
-                    <div className="flex items-center gap-8 flex-grow">
-                      <div className="w-16 h-16 bg-black text-white rounded-[1.6rem] flex items-center justify-center font-bold text-2xl group-hover:scale-105 transition-transform duration-500">
+                    <div className="flex items-center gap-10 flex-grow">
+                      <div className="w-20 h-20 bg-black text-white rounded-[1.8rem] flex items-center justify-center font-bold text-3xl group-hover:scale-105 transition-transform duration-500 shadow-xl shadow-black/5">
                         {lead.name.charAt(0)}
                       </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-4">
-                          <h3 className="font-bold text-xl text-[#0B0B0B] tracking-tight">{lead.name}</h3>
-                          <span className={`text-[9px] font-black uppercase tracking-[0.2em] border rounded-full px-4 py-1.5 flex items-center gap-2 ${getStatusColor(lead.status)}`}>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-5">
+                          <h3 className="font-black text-2xl text-[#0B0B0B] tracking-tighter">{lead.name}</h3>
+                          <span className={`text-[9px] font-black uppercase tracking-[0.2em] border rounded-full px-5 py-2 flex items-center gap-2 ${getStatusColor(lead.status)}`}>
                             {lead.status.replace('_', ' ')}
                           </span>
                         </div>
-                        <p className="text-[#6B7280] text-sm font-medium tracking-tight">
-                          {lead.service} <span className="mx-2 text-gray-200">•</span> {lead.phone}
-                        </p>
+                        <div className="flex items-center gap-4 text-[#6B7280] text-[13px] font-bold tracking-tight">
+                          <div className="flex items-center gap-2 text-black">
+                            <Phone size={14} className="opacity-30" />
+                            {lead.phone}
+                          </div>
+                          <span className="text-gray-100">|</span>
+                          <span className="uppercase text-[10px] tracking-widest text-gray-400">{lead.service}</span>
+                        </div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-16 text-right w-full md:w-auto justify-between md:justify-end">
                       
-                      {/* ASSIGNMENT (Admin Only) */}
                       {isAdmin && (
-                        <div className="text-left min-w-[160px]">
-                          <div className="text-[10px] font-bold text-gray-300 uppercase tracking-widest mb-3 flex items-center gap-2">
-                            <UserCheck size={12} />
-                            Assign Expert
+                        <div className="text-left min-w-[180px]">
+                          <div className="text-[10px] font-black text-gray-300 uppercase tracking-[0.25em] mb-3 flex items-center gap-2">
+                            <UserCheck size={14} />
+                            Responsibility
                           </div>
                           <select 
                             value={lead.assignedTo || 'unassigned'}
                             onChange={(e) => assignLead(lead.id, e.target.value)}
-                            className="w-full p-4 bg-gray-50 border-none rounded-2xl text-[10px] font-bold uppercase tracking-widest focus:ring-1 focus:ring-black outline-none transition-all cursor-pointer appearance-none text-gray-500 hover:bg-gray-100"
+                            className="w-full p-4 bg-gray-50/50 border-none rounded-2xl text-[10px] font-black uppercase tracking-widest focus:ring-1 focus:ring-black outline-none transition-all cursor-pointer appearance-none text-gray-500 hover:bg-gray-100"
                           >
-                            <option value="unassigned">-- Select Employee --</option>
+                            <option value="unassigned">-- Select Expert --</option>
                             {globalUsers.filter(u => u.role !== 'HEAD_ADMIN').map(user => (
                               <option key={user.id} value={user.id}>{user.name}</option>
                             ))}
@@ -487,16 +508,16 @@ const Dashboard: React.FC<DashboardProps> = ({
 
                       {!isAdmin && lead.assignedTo && (
                         <div className="text-left">
-                           <div className="text-[10px] font-bold text-gray-300 uppercase tracking-widest mb-3">Responsible</div>
-                           <div className="text-sm font-bold text-black uppercase tracking-tight">
-                             {globalUsers.find(u => u.id === lead.assignedTo)?.name || 'Processing Team'}
+                           <div className="text-[10px] font-black text-gray-300 uppercase tracking-[0.25em] mb-3">Expert In Charge</div>
+                           <div className="text-[12px] font-black text-black uppercase tracking-tight">
+                             {globalUsers.find(u => u.id === lead.assignedTo)?.name || 'Legal Team'}
                            </div>
                         </div>
                       )}
 
                       <div className="hidden lg:block text-center">
-                        <div className="text-[10px] font-bold text-gray-300 uppercase tracking-widest mb-3">Timestamp</div>
-                        <div className="text-sm font-bold text-[#0B0B0B]">
+                        <div className="text-[10px] font-black text-gray-300 uppercase tracking-[0.25em] mb-3">Timestamp</div>
+                        <div className="text-[12px] font-black text-[#0B0B0B]">
                           {new Date(lead.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}, {new Date(lead.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </div>
@@ -505,77 +526,68 @@ const Dashboard: React.FC<DashboardProps> = ({
                         <select 
                           value={lead.status}
                           onChange={(e) => updateStatus(lead.id, e.target.value as LeadStatus)}
-                          className="p-4 bg-gray-50 border-none rounded-2xl text-[10px] font-bold uppercase tracking-widest focus:ring-1 focus:ring-black outline-none transition-all cursor-pointer appearance-none font-black text-[#0B0B0B]"
+                          className="p-4 bg-gray-50/50 border-none rounded-2xl text-[10px] font-black uppercase tracking-widest focus:ring-1 focus:ring-black outline-none transition-all cursor-pointer appearance-none font-black text-[#0B0B0B]"
                         >
                           <option value="NEW">NEW</option>
-                          <option value="IN_PROGRESS">IN PROGRESS</option>
-                          <option value="COMPLETED">COMPLETED</option>
-                          <option value="CANCELLED">CANCELLED</option>
+                          <option value="IN_PROGRESS">ACTIVE</option>
+                          <option value="COMPLETED">DONE</option>
+                          <option value="CANCELLED">VOID</option>
                         </select>
                       </div>
 
+                      {/* THE CIRCULAR BUTTON - NOW FUNCTIONAL */}
                       <button 
                         onClick={() => setSelectedLead(lead)}
-                        className="w-20 h-20 rounded-full bg-black text-white flex items-center justify-center hover:scale-110 transition-all shadow-2xl shadow-black/10 flex-shrink-0 active:scale-95 cursor-pointer hover:bg-[#111]"
+                        className="w-20 h-20 rounded-full bg-black text-white flex items-center justify-center hover:scale-110 transition-all shadow-2xl shadow-black/20 flex-shrink-0 active:scale-95 cursor-pointer hover:bg-[#111]"
                       >
-                        <ChevronRight size={26} />
+                        <ChevronRight size={30} />
                       </button>
                     </div>
                   </div>
                 ))}
-                
-                {filteredLeads.length === 0 && (
-                  <div className="py-40 text-center bg-white rounded-[4rem] border border-dashed border-gray-100">
-                    <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-10">
-                       <LayoutDashboard className="text-gray-200" size={40} />
-                    </div>
-                    <h3 className="text-2xl font-bold text-[#0B0B0B]">No leads currently in queue</h3>
-                    <p className="text-gray-400 mt-3 font-medium">New customer inquiries will appear here automatically.</p>
-                  </div>
-                )}
               </div>
             </div>
           )}
 
           {activeTab === 'users' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 pb-24 animate-in fade-in slide-in-from-bottom-6 duration-700">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
               {globalUsers.map((user, idx) => (
                 <div 
                   key={user.id} 
-                  className="bg-white p-12 border border-gray-50 rounded-[4.2rem] shadow-sm hover:border-black transition-all duration-700 group relative overflow-hidden"
+                  className="bg-white p-12 border border-gray-50 rounded-[4.5rem] shadow-sm hover:border-black transition-all duration-700 group relative overflow-hidden"
                   style={{ animationDelay: `${idx * 100}ms` }}
                 >
                   <div className="flex items-center gap-8 mb-14">
-                    <div className="w-20 h-20 bg-black text-white rounded-[1.8rem] flex items-center justify-center font-bold text-3xl group-hover:scale-105 transition-transform duration-500 shadow-xl shadow-black/5">
+                    <div className="w-20 h-20 bg-black text-white rounded-[2rem] flex items-center justify-center font-bold text-3xl group-hover:scale-105 transition-transform duration-500 shadow-xl shadow-black/5">
                       {user.name.charAt(0)}
                     </div>
                     <div>
-                      <h3 className="font-bold text-2xl tracking-tight leading-none mb-3">{user.name}</h3>
-                      <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em]">{user.role.replace('_', ' ')}</div>
+                      <h3 className="font-black text-2xl tracking-tighter leading-none mb-3">{user.name}</h3>
+                      <div className="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em]">{user.role.replace('_', ' ')}</div>
                     </div>
                   </div>
                   <div className="space-y-10 mb-14">
-                    <div className="flex flex-col gap-2.5">
-                      <span className="text-gray-300 font-black uppercase tracking-widest text-[9px]">Professional Email</span>
+                    <div className="flex flex-col gap-3">
+                      <span className="text-gray-300 font-black uppercase tracking-[0.2em] text-[9px]">Professional Gateway</span>
                       <span className="font-bold text-[#0B0B0B] truncate text-base tracking-tight">{user.email}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-300 font-black uppercase tracking-widest text-[9px]">Status</span>
-                      <span className="text-[#10B981] font-black uppercase tracking-widest text-[9px] flex items-center gap-2.5 bg-[#10B981]/5 px-4 py-2 rounded-full border border-[#10B981]/10">
+                      <span className="text-gray-300 font-black uppercase tracking-[0.2em] text-[9px]">Network Status</span>
+                      <span className="text-[#10B981] font-black uppercase tracking-widest text-[9px] flex items-center gap-3 bg-[#10B981]/5 px-5 py-2.5 rounded-full border border-[#10B981]/10">
                         <div className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-                        Online Now
+                        ACTIVE
                       </span>
                     </div>
                   </div>
                   <div className="pt-10 border-t border-gray-50 flex justify-between items-center">
-                     <button className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-black transition-colors hover:underline underline-offset-8">Full Profile</button>
+                     <button className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-black transition-colors hover:underline underline-offset-8">Consultant ID</button>
                      {currentUser.role === 'HEAD_ADMIN' && user.id !== currentUser.id && (
                         <button 
                           onClick={() => onRemoveUser(user.id)}
-                          className="text-[10px] font-black uppercase tracking-widest text-red-500 hover:scale-105 transition-all flex items-center gap-2.5 px-4 py-2 hover:bg-red-50 rounded-xl"
+                          className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500 hover:scale-105 transition-all flex items-center gap-3 px-5 py-2.5 hover:bg-red-50 rounded-xl"
                         >
                           <ShieldAlert size={14} />
-                          Revoke Access
+                          REVOKE
                         </button>
                      )}
                   </div>
