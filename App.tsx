@@ -1,34 +1,31 @@
-
 import React, { useState, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import Layout from './components/Layout';
-import Home from './pages/Home';
-import About from './pages/About';
-import ServicesOverview from './pages/ServicesOverview';
-import ServiceDetail from './pages/ServiceDetail';
-import Pricing from './pages/Pricing';
-import Contact from './pages/Contact';
-import ApplicationLicense from './pages/ApplicationLicense';
-import ApplicationRenewal from './pages/ApplicationRenewal';
-import Disclaimer from './pages/Disclaimer';
-import Terms from './pages/Terms';
-import Privacy from './pages/Privacy';
-import RefundPolicy from './pages/RefundPolicy';
-import Compliance from './pages/Compliance';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import ThankYou from './pages/ThankYou';
-import { Lead, User } from './types';
-import { MOCK_LEADS, MOCK_USERS } from './constants';
+import Layout from './components/Layout.tsx';
+import Home from './pages/Home.tsx';
+import About from './pages/About.tsx';
+import ServicesOverview from './pages/ServicesOverview.tsx';
+import ServiceDetail from './pages/ServiceDetail.tsx';
+import Pricing from './pages/Pricing.tsx';
+import Contact from './pages/Contact.tsx';
+import ApplicationLicense from './pages/ApplicationLicense.tsx';
+import ApplicationRenewal from './pages/ApplicationRenewal.tsx';
+import Disclaimer from './pages/Disclaimer.tsx';
+import Terms from './pages/Terms.tsx';
+import Privacy from './pages/Privacy.tsx';
+import RefundPolicy from './pages/RefundPolicy.tsx';
+import Compliance from './pages/Compliance.tsx';
+import Login from './pages/Login.tsx';
+import Dashboard from './pages/Dashboard.tsx';
+import ThankYou from './pages/ThankYou.tsx';
+import { Lead, User } from './types.ts';
+import { MOCK_LEADS, MOCK_USERS } from './constants.tsx';
 
 const App: React.FC = () => {
-  // Global Leads State - Persisted in LocalStorage
   const [leads, setLeads] = useState<Lead[]>(() => {
     const saved = localStorage.getItem('lsi_leads');
     return saved ? JSON.parse(saved) : MOCK_LEADS;
   });
 
-  // Global Users State - Persisted in LocalStorage
   const [users, setUsers] = useState<User[]>(() => {
     const saved = localStorage.getItem('lsi_users');
     return saved ? JSON.parse(saved) : MOCK_USERS;
@@ -58,17 +55,13 @@ const App: React.FC = () => {
   };
 
   const addUser = (newUser: Omit<User, 'id'>) => {
-    const user: User = {
-      ...newUser,
-      id: `u-${Date.now()}`,
-    };
+    const user: User = { ...newUser, id: `u-${Date.now()}` };
     setUsers(prev => [...prev, user]);
   };
 
   const removeUser = (userId: string) => {
-    if (confirm("Are you sure you want to revoke access? This user will be removed from the system.")) {
+    if (confirm("Revoke access for this expert?")) {
       setUsers(prev => prev.filter(u => u.id !== userId));
-      // Unassign leads from this user to prevent orphaned assignments
       setLeads(prev => prev.map(l => l.assignedTo === userId ? { ...l, assignedTo: undefined } : l));
     }
   };
