@@ -1,20 +1,42 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, ShieldCheck, RefreshCw, FileText, CheckCircle2, UserCheck, Clock, Zap } from 'lucide-react';
 import { SERVICES, TESTIMONIALS } from '../constants';
 import Logo from '../components/Logo';
+import { Lead } from '../types';
 
-const Home: React.FC = () => {
+interface HomeProps {
+  onFormSubmit: (lead: Omit<Lead, 'id' | 'status' | 'createdAt' | 'updatedAt'>) => void;
+}
+
+const Home: React.FC<HomeProps> = ({ onFormSubmit }) => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
+
   const icons: Record<string, React.ReactNode> = {
     ShieldCheck: <ShieldCheck className="w-5 h-5" />,
     RefreshCw: <RefreshCw className="w-5 h-5" />,
     FileText: <FileText className="w-5 h-5" />
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.email || !formData.phone) return;
+    
+    onFormSubmit({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      service: 'General Callback Request'
+    });
+    
+    navigate('/thank-you');
+  };
+
   return (
     <div className="animate-in fade-in duration-1000">
-      {/* Hero Section - Reduced padding and heading size */}
+      {/* Hero Section */}
       <section className="py-20 md:py-36 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-3xl">
@@ -48,7 +70,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Trust Metrics - Reduced padding */}
+      {/* Trust Metrics */}
       <section className="border-y border-gray-100 py-16 px-6 bg-white/40 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12">
           {[
@@ -65,7 +87,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Services Grid - Reduced padding and heading size */}
+      {/* Services Grid */}
       <section className="py-24 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -99,7 +121,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Lead Capture Form - Reduced padding */}
+      {/* Lead Capture Form */}
       <section className="py-24 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="bg-black text-white rounded-[3rem] p-10 md:p-24 overflow-hidden relative shadow-xl shadow-black/10">
@@ -107,11 +129,14 @@ const Home: React.FC = () => {
               <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-8 leading-[1.1] animate-in slide-in-from-bottom-4">Let’s simplify your compliance.</h2>
               <p className="text-gray-400 mb-16 text-base font-medium max-w-md">Share your details and a compliance expert will contact you within 2 working hours.</p>
               
-              <form className="grid grid-cols-1 md:grid-cols-2 gap-10" onSubmit={(e) => e.preventDefault()}>
+              <form className="grid grid-cols-1 md:grid-cols-2 gap-10" onSubmit={handleSubmit}>
                 <div className="group border-b border-gray-800 focus-within:border-white transition-colors duration-500">
                   <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-600 block mb-1.5">Full Name</label>
                   <input 
                     type="text" 
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
                     placeholder="E.g. Arshed Anwar" 
                     className="w-full bg-transparent py-3 focus:outline-none text-white text-sm placeholder:text-gray-800"
                   />
@@ -120,6 +145,9 @@ const Home: React.FC = () => {
                   <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-600 block mb-1.5">Email Address</label>
                   <input 
                     type="email" 
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
                     placeholder="E.g. contact@business.com" 
                     className="w-full bg-transparent py-3 focus:outline-none text-white text-sm placeholder:text-gray-800"
                   />
@@ -128,12 +156,16 @@ const Home: React.FC = () => {
                   <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-600 block mb-1.5">Phone Number</label>
                   <input 
                     type="tel" 
+                    required
+                    value={formData.phone}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
                     placeholder="+91 00000 00000" 
                     className="w-full bg-transparent py-3 focus:outline-none text-white text-sm placeholder:text-gray-800"
                   />
                 </div>
                 <div className="pt-6">
                   <button 
+                    type="submit"
                     className="bg-white text-black px-10 py-4 rounded-full font-bold hover:scale-105 transition-all text-sm shadow-xl active:scale-95"
                   >
                     Request a Callback

@@ -1,18 +1,46 @@
 
-import React, { useEffect } from 'react';
-import { ArrowRight, CheckCircle2, LayoutGrid, Building2, HelpCircle, Check } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowRight, CheckCircle2, Building2, HelpCircle, Check } from 'lucide-react';
+import { Lead } from '../types';
 
-const ApplicationLicense: React.FC = () => {
-  // Automatic scroll to form on page load
+interface ApplicationLicenseProps {
+  onFormSubmit: (lead: Omit<Lead, 'id' | 'status' | 'createdAt' | 'updatedAt'>) => void;
+}
+
+const ApplicationLicense: React.FC<ApplicationLicenseProps> = ({ onFormSubmit }) => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    businessType: 'Restaurant / Cafe',
+    licenseType: 'Basic Registration'
+  });
+
   useEffect(() => {
     const timer = setTimeout(() => {
       const element = document.getElementById('apply-form');
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
       }
-    }, 500); // Small delay to allow layout to settle and ensure scroll-behavior: smooth is respected
+    }, 500);
     return () => clearTimeout(timer);
   }, []);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.email || !formData.phone) return;
+
+    onFormSubmit({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      service: `FSSAI License (${formData.licenseType} - ${formData.businessType})`
+    });
+
+    navigate('/thank-you');
+  };
 
   const scrollToForm = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -53,7 +81,7 @@ const ApplicationLicense: React.FC = () => {
         </div>
       </section>
 
-      {/* 2. FORM SECTION (Immediately after Hero) - Added scroll-mt-32 to account for fixed header */}
+      {/* 2. FORM SECTION */}
       <section className="py-24 px-6 bg-[#F9FAFB] scroll-mt-32" id="apply-form">
         <div className="max-w-3xl mx-auto">
           <div className="bg-white border border-gray-100 rounded-[3rem] p-10 md:p-16 shadow-2xl">
@@ -62,28 +90,58 @@ const ApplicationLicense: React.FC = () => {
               <p className="text-[#6B7280]">Fill out the form below and our experts will get back to you within 2 hours.</p>
             </div>
             
-            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <input type="text" placeholder="Full Name" className="w-full bg-[#F3F4F6] border-none rounded-2xl p-5 outline-none focus:ring-1 focus:ring-black text-[#0B0B0B] placeholder:text-[#9CA3AF]" />
-                <input type="email" placeholder="Email Address" className="w-full bg-[#F3F4F6] border-none rounded-2xl p-5 outline-none focus:ring-1 focus:ring-black text-[#0B0B0B] placeholder:text-[#9CA3AF]" />
+                <input 
+                  type="text" 
+                  required
+                  placeholder="Full Name" 
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  className="w-full bg-[#F3F4F6] border-none rounded-2xl p-5 outline-none focus:ring-1 focus:ring-black text-[#0B0B0B] placeholder:text-[#9CA3AF]" 
+                />
+                <input 
+                  type="email" 
+                  required
+                  placeholder="Email Address" 
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  className="w-full bg-[#F3F4F6] border-none rounded-2xl p-5 outline-none focus:ring-1 focus:ring-black text-[#0B0B0B] placeholder:text-[#9CA3AF]" 
+                />
               </div>
-              <input type="tel" placeholder="Phone Number" className="w-full bg-[#F3F4F6] border-none rounded-2xl p-5 outline-none focus:ring-1 focus:ring-black text-[#0B0B0B] placeholder:text-[#9CA3AF]" />
+              <input 
+                type="tel" 
+                required
+                placeholder="Phone Number" 
+                value={formData.phone}
+                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                className="w-full bg-[#F3F4F6] border-none rounded-2xl p-5 outline-none focus:ring-1 focus:ring-black text-[#0B0B0B] placeholder:text-[#9CA3AF]" 
+              />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 <select className="w-full bg-[#F3F4F6] border-none rounded-2xl p-4 focus:ring-1 focus:ring-black appearance-none text-[#6B7280]">
-                    <option>Select Business Type</option>
+                 <select 
+                   value={formData.businessType}
+                   onChange={(e) => setFormData({...formData, businessType: e.target.value})}
+                   className="w-full bg-[#F3F4F6] border-none rounded-2xl p-4 focus:ring-1 focus:ring-black appearance-none text-[#6B7280]"
+                 >
                     <option>Restaurant / Cafe</option>
                     <option>Cloud Kitchen</option>
                     <option>Manufacturing Unit</option>
                     <option>Distributor / Supplier</option>
                  </select>
-                 <select className="w-full bg-[#F3F4F6] border-none rounded-2xl p-4 focus:ring-1 focus:ring-black appearance-none text-[#6B7280]">
-                    <option>Expected License Type</option>
+                 <select 
+                   value={formData.licenseType}
+                   onChange={(e) => setFormData({...formData, licenseType: e.target.value})}
+                   className="w-full bg-[#F3F4F6] border-none rounded-2xl p-4 focus:ring-1 focus:ring-black appearance-none text-[#6B7280]"
+                 >
                     <option>Basic Registration</option>
                     <option>State License</option>
                     <option>Central License</option>
                  </select>
               </div>
-              <button className="w-full bg-black text-white py-6 rounded-full font-bold text-lg hover:bg-gray-900 transition-all">
+              <button 
+                type="submit"
+                className="w-full bg-black text-white py-6 rounded-full font-bold text-lg hover:bg-gray-900 transition-all shadow-xl active:scale-95"
+              >
                 Submit Application
               </button>
             </form>
@@ -275,7 +333,7 @@ const ApplicationLicense: React.FC = () => {
         </div>
       </section>
 
-      {/* 6. DISCLAIMER BLOCK (Short Version) */}
+      {/* 6. DISCLAIMER BLOCK */}
       <section className="pb-32 px-6">
         <div className="max-w-4xl mx-auto p-12 bg-gray-50 border border-gray-100 rounded-[3rem] text-xs text-[#6B7280] leading-relaxed text-center">
           Legal Success India is an independent consultancy and not a government entity. Information provided is for informational purposes only and does not constitute legal advice.

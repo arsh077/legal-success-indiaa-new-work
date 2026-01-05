@@ -1,9 +1,22 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowRight, RefreshCw, Clock, ShieldAlert, CheckCircle2, Check } from 'lucide-react';
+import { Lead } from '../types';
 
-const ApplicationRenewal: React.FC = () => {
-  // Automatic scroll to form on page load
+interface ApplicationRenewalProps {
+  onFormSubmit: (lead: Omit<Lead, 'id' | 'status' | 'createdAt' | 'updatedAt'>) => void;
+}
+
+const ApplicationRenewal: React.FC<ApplicationRenewalProps> = ({ onFormSubmit }) => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    licenseNumber: ''
+  });
+
   useEffect(() => {
     const timer = setTimeout(() => {
       const element = document.getElementById('renew-form');
@@ -13,6 +26,20 @@ const ApplicationRenewal: React.FC = () => {
     }, 500);
     return () => clearTimeout(timer);
   }, []);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.email || !formData.phone) return;
+
+    onFormSubmit({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      service: `FSSAI Renewal (Lic: ${formData.licenseNumber})`
+    });
+
+    navigate('/thank-you');
+  };
 
   const scrollToForm = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -53,7 +80,7 @@ const ApplicationRenewal: React.FC = () => {
         </div>
       </section>
 
-      {/* 2. FORM SECTION (Immediately after Hero) - Added scroll-mt-32 */}
+      {/* 2. FORM SECTION */}
       <section className="py-24 px-6 bg-[#F9FAFB] scroll-mt-32" id="renew-form">
         <div className="max-w-3xl mx-auto">
           <div className="bg-white border border-gray-100 rounded-[3rem] p-10 md:p-16 shadow-2xl">
@@ -62,15 +89,46 @@ const ApplicationRenewal: React.FC = () => {
               <p className="text-[#6B7280]">Submit your existing license details for a fast renewal assessment.</p>
             </div>
             
-            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <input type="text" placeholder="Full Name" className="w-full bg-[#F3F4F6] border-none rounded-2xl p-5 outline-none focus:ring-1 focus:ring-black text-[#0B0B0B] placeholder:text-[#9CA3AF]" />
-                <input type="email" placeholder="Email Address" className="w-full bg-[#F3F4F6] border-none rounded-2xl p-5 outline-none focus:ring-1 focus:ring-black text-[#0B0B0B] placeholder:text-[#9CA3AF]" />
+                <input 
+                  type="text" 
+                  required
+                  placeholder="Full Name" 
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  className="w-full bg-[#F3F4F6] border-none rounded-2xl p-5 outline-none focus:ring-1 focus:ring-black text-[#0B0B0B] placeholder:text-[#9CA3AF]" 
+                />
+                <input 
+                  type="email" 
+                  required
+                  placeholder="Email Address" 
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  className="w-full bg-[#F3F4F6] border-none rounded-2xl p-5 outline-none focus:ring-1 focus:ring-black text-[#0B0B0B] placeholder:text-[#9CA3AF]" 
+                />
               </div>
-              <input type="tel" placeholder="Phone Number" className="w-full bg-[#F3F4F6] border-none rounded-2xl p-5 outline-none focus:ring-1 focus:ring-black text-[#0B0B0B] placeholder:text-[#9CA3AF]" />
-              <input type="text" placeholder="Current FSSAI License Number" className="w-full bg-[#F3F4F6] border-none rounded-2xl p-5 outline-none focus:ring-1 focus:ring-black font-mono tracking-wider text-[#0B0B0B]" />
+              <input 
+                type="tel" 
+                required
+                placeholder="Phone Number" 
+                value={formData.phone}
+                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                className="w-full bg-[#F3F4F6] border-none rounded-2xl p-5 outline-none focus:ring-1 focus:ring-black text-[#0B0B0B] placeholder:text-[#9CA3AF]" 
+              />
+              <input 
+                type="text" 
+                required
+                placeholder="Current FSSAI License Number" 
+                value={formData.licenseNumber}
+                onChange={(e) => setFormData({...formData, licenseNumber: e.target.value})}
+                className="w-full bg-[#F3F4F6] border-none rounded-2xl p-5 outline-none focus:ring-1 focus:ring-black font-mono tracking-wider text-[#0B0B0B]" 
+              />
               
-              <button className="w-full bg-black text-white py-6 rounded-full font-bold text-lg hover:bg-gray-900 transition-all flex items-center justify-center gap-3">
+              <button 
+                type="submit"
+                className="w-full bg-black text-white py-6 rounded-full font-bold text-lg hover:bg-gray-900 transition-all flex items-center justify-center gap-3 shadow-xl active:scale-95"
+              >
                 <RefreshCw size={20} />
                 Submit Renewal Request
               </button>
@@ -166,7 +224,7 @@ const ApplicationRenewal: React.FC = () => {
         </div>
       </section>
 
-      {/* 5. DISCLAIMER BLOCK (Short Version) */}
+      {/* 5. DISCLAIMER BLOCK */}
       <section className="pb-32 px-6">
         <div className="max-w-4xl mx-auto p-12 bg-gray-50 border border-gray-100 rounded-[3rem] text-xs text-[#6B7280] leading-relaxed text-center">
           Legal Success India is an independent consultancy and not a government entity. Information provided is for informational purposes only and does not constitute legal advice.
