@@ -16,8 +16,10 @@ import {
   X,
   UserCheck,
   ShieldAlert,
-  Clock,
-  CheckCircle2
+  Phone,
+  Mail,
+  Calendar,
+  ExternalLink
 } from 'lucide-react';
 import { User, Lead, LeadStatus, UserRole } from '../types';
 import Logo from '../components/Logo';
@@ -43,8 +45,9 @@ const Dashboard: React.FC<DashboardProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   
-  // Modals state
+  // Modal states
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [newUser, setNewUser] = useState({ name: '', email: '', role: 'EMPLOYEE' as UserRole });
 
   useEffect(() => {
@@ -75,18 +78,22 @@ const Dashboard: React.FC<DashboardProps> = ({
   const updateStatus = (leadId: string, status: LeadStatus) => {
     const lead = globalLeads.find(l => l.id === leadId);
     if (lead) {
-      onUpdateLead({ ...lead, status, updatedAt: new Date().toISOString() });
+      const updated = { ...lead, status, updatedAt: new Date().toISOString() };
+      onUpdateLead(updated);
+      if (selectedLead?.id === leadId) setSelectedLead(updated);
     }
   };
 
   const assignLead = (leadId: string, userId: string) => {
     const lead = globalLeads.find(l => l.id === leadId);
     if (lead) {
-      onUpdateLead({ 
+      const updated = { 
         ...lead, 
         assignedTo: userId === 'unassigned' ? undefined : userId, 
         updatedAt: new Date().toISOString() 
-      });
+      };
+      onUpdateLead(updated);
+      if (selectedLead?.id === leadId) setSelectedLead(updated);
     }
   };
 
@@ -126,6 +133,105 @@ const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className="min-h-screen bg-[#F9FAFB] flex animate-in fade-in duration-700 relative overflow-hidden">
       
+      {/* LEAD DETAIL MODAL */}
+      {selectedLead && (
+        <div className="fixed inset-0 z-[250] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-[3.5rem] w-full max-w-2xl p-12 shadow-2xl relative overflow-hidden">
+             {/* Modal Header Decoration */}
+             <div className="absolute top-0 left-0 w-full h-2 bg-black" />
+             
+             <button 
+              onClick={() => setSelectedLead(null)}
+              className="absolute top-10 right-10 p-3 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="mb-12">
+              <div className="flex items-center gap-6 mb-8">
+                <div className="w-20 h-20 bg-black text-white rounded-[2rem] flex items-center justify-center font-bold text-3xl">
+                  {selectedLead.name.charAt(0)}
+                </div>
+                <div>
+                   <h2 className="text-3xl font-bold tracking-tight mb-2">{selectedLead.name}</h2>
+                   <p className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.2em]">{selectedLead.service}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                 <div className="space-y-6">
+                    <div>
+                      <label className="text-[9px] font-bold text-gray-300 uppercase tracking-widest block mb-2">Phone Number</label>
+                      <a href={`tel:${selectedLead.phone}`} className="flex items-center gap-3 text-lg font-bold text-black hover:underline group">
+                        <Phone size={18} className="text-gray-300 group-hover:text-black transition-colors" />
+                        {selectedLead.phone}
+                        <ExternalLink size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </a>
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-bold text-gray-300 uppercase tracking-widest block mb-2">Email Address</label>
+                      <a href={`mailto:${selectedLead.email}`} className="flex items-center gap-3 text-lg font-bold text-black hover:underline group">
+                        <Mail size={18} className="text-gray-300 group-hover:text-black transition-colors" />
+                        {selectedLead.email}
+                      </a>
+                    </div>
+                 </div>
+                 <div className="space-y-6">
+                    <div>
+                      <label className="text-[9px] font-bold text-gray-300 uppercase tracking-widest block mb-2">Created On</label>
+                      <div className="flex items-center gap-3 text-lg font-bold text-black">
+                        <Calendar size={18} className="text-gray-300" />
+                        {new Date(selectedLead.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-bold text-gray-300 uppercase tracking-widest block mb-2">Current Status</label>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-3 h-3 rounded-full ${getStatusColor(selectedLead.status).split(' ')[1].replace('text-', 'bg-')}`} />
+                        <span className="font-bold text-black uppercase tracking-widest text-[11px]">{selectedLead.status.replace('_', ' ')}</span>
+                      </div>
+                    </div>
+                 </div>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-100 pt-12 mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+               {isAdmin && (
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Reassign Expert</label>
+                    <select 
+                      value={selectedLead.assignedTo || 'unassigned'}
+                      onChange={(e) => assignLead(selectedLead.id, e.target.value)}
+                      className="w-full p-5 bg-gray-50 border-none rounded-2xl text-[11px] font-bold uppercase tracking-widest focus:ring-1 focus:ring-black outline-none transition-all cursor-pointer"
+                    >
+                      <option value="unassigned">-- Unassigned --</option>
+                      {globalUsers.filter(u => u.role !== 'HEAD_ADMIN').map(user => (
+                        <option key={user.id} value={user.id}>{user.name}</option>
+                      ))}
+                    </select>
+                  </div>
+               )}
+               <div className="space-y-4">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Update Progression</label>
+                  <div className="flex flex-wrap gap-2">
+                    {['NEW', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map((s) => (
+                      <button 
+                        key={s}
+                        onClick={() => updateStatus(selectedLead.id, s as LeadStatus)}
+                        className={`px-6 py-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
+                          selectedLead.status === s ? 'bg-black text-white shadow-xl shadow-black/10' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+                        }`}
+                      >
+                        {s.replace('_', ' ')}
+                      </button>
+                    ))}
+                  </div>
+               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ADD USER MODAL */}
       {isAddUserModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
@@ -167,7 +273,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <select 
                   value={newUser.role}
                   onChange={(e) => setNewUser({...newUser, role: e.target.value as UserRole})}
-                  className="w-full bg-gray-50 border-none rounded-2xl p-5 outline-none focus:ring-1 focus:ring-black transition-all appearance-none"
+                  className="w-full bg-gray-50 border-none rounded-2xl p-5 outline-none focus:ring-1 focus:ring-black appearance-none"
                 >
                   <option value="EMPLOYEE">Employee (Assigned Leads Only)</option>
                   <option value="ADMIN">Admin (All Leads + Assignment)</option>
@@ -352,7 +458,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                           </span>
                         </div>
                         <p className="text-[#6B7280] text-sm font-medium tracking-tight">
-                          {lead.service} <span className="mx-2 text-gray-200">•</span> {lead.email}
+                          {lead.service} <span className="mx-2 text-gray-200">•</span> {lead.phone}
                         </p>
                       </div>
                     </div>
@@ -408,7 +514,10 @@ const Dashboard: React.FC<DashboardProps> = ({
                         </select>
                       </div>
 
-                      <button className="w-20 h-20 rounded-full bg-black text-white flex items-center justify-center hover:scale-110 transition-all shadow-2xl shadow-black/10 flex-shrink-0 group-hover:bg-[#111]">
+                      <button 
+                        onClick={() => setSelectedLead(lead)}
+                        className="w-20 h-20 rounded-full bg-black text-white flex items-center justify-center hover:scale-110 transition-all shadow-2xl shadow-black/10 flex-shrink-0 active:scale-95 cursor-pointer hover:bg-[#111]"
+                      >
                         <ChevronRight size={26} />
                       </button>
                     </div>
