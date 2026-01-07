@@ -1,29 +1,152 @@
-import React, { useState, useEffect } from 'react';
+
+import React, {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
 import { useNavigate } from 'react-router-dom';
-import { 
-  Users, 
-  Search, 
-  Filter, 
-  LogOut,
-  UserPlus,
-  ChevronRight,
-  Menu,
-  ChevronLeft,
-  Settings,
-  Bell,
-  LayoutDashboard,
-  X,
-  UserCheck,
-  ShieldAlert,
-  Phone,
-  Mail,
-  Calendar,
-  ExternalLink,
-  MessageSquare,
-  Hash
-} from 'lucide-react';
 import { User, Lead, LeadStatus, UserRole } from '../types.ts';
-import Logo from '../components/Logo.tsx';
+
+// --- ICONS COMPONENT ---
+const Icons = {
+  Dots: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <circle cx="12" cy="5" r="1" />
+      <circle cx="12" cy="12" r="1" />
+      <circle cx="12" cy="19" r="1" />
+    </svg>
+  ),
+  Grid: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z" stroke="currentColor" strokeWidth="2" fill="none" />
+    </svg>
+  ),
+  List: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" strokeWidth="2" fill="none" />
+    </svg>
+  ),
+  Bell: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" strokeWidth="2" fill="none" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" strokeWidth="2" />
+    </svg>
+  ),
+  Search: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" fill="none" />
+      <path d="m20 20-3.5-3.5" stroke="currentColor" strokeWidth="2" />
+    </svg>
+  ),
+  Theme: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" strokeWidth="2" fill="none" />
+    </svg>
+  ),
+  Plus: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="3" />
+    </svg>
+  ),
+  Trash: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path d="M3 6h18M8 6V4h8v2m-1 0v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6" stroke="currentColor" strokeWidth="2" fill="none"/>
+    </svg>
+  ),
+  Home: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-10.5z" stroke="currentColor" strokeWidth="2" fill="none" />
+    </svg>
+  ),
+  Chart: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path d="M4 19V5M10 19V9M16 19V3M22 19H2" stroke="currentColor" strokeWidth="2" fill="none" />
+    </svg>
+  ),
+  Calendar: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path d="M7 2v4M17 2v4M3 8h18M5 6h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" stroke="currentColor" strokeWidth="2" fill="none" />
+    </svg>
+  ),
+  Settings: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <path d="M19.4 15a1.8 1.8 0 0 0 .36 1.98l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.8 1.8 0 0 0 15 19.4a1.8 1.8 0 0 0-1 .33 1.8 1.8 0 0 0-.82 1.51V21.5a2 2 0 1 1-4 0v-.26A1.8 1.8 0 0 0 7 19.4a1.8 1.8 0 0 0-1.98-.36l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.8 1.8 0 0 0 4.6 15a1.8 1.8 0 0 0-.33-1 1.8 1.8 0 0 0-1.51-.82H2.5a2 2 0 1 1 0-4h.26A1.8 1.8 0 0 0 4.6 7a1.8 1.8 0 0 0-.36-1.98l-.06-.06A2 2 0 1 1 7.01 2.13l.06.06A1.8 1.8 0 0 0 9 4.6c.34 0 .67-.11 1-.33.46-.31.77-.82.82-1.38V2.5a2 2 0 1 1 4 0v.26c.05.56.36 1.07.82 1.38.33.22.66.33 1 .33a1.8 1.8 0 0 0 1.98-.36l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.8 1.8 0 0 0 19.4 9c0 .34.11.67.33 1 .31.46.82.77 1.38.82h.39a2 2 0 1 1 0 4h-.39c-.56.05-1.07.36-1.38.82-.22.33-.33.66-.33 1z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+    </svg>
+  ),
+  Close: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path d="M6 6l12 12M6 18L18 6" stroke="currentColor" strokeWidth="2" />
+    </svg>
+  ),
+  Logo: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path d="M4 7h16M7 12h10M10 17h4" stroke="currentColor" strokeWidth="2" fill="none" />
+    </svg>
+  ),
+  Chat: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7A8.4 8.4 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.5 8.5 0 0 1 21 11.5Z" stroke="currentColor" strokeWidth="2" fill="none" />
+    </svg>
+  ),
+  Star: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path d="M12 2l3.1 6.3L22 9.3l-5 4.9 1.2 7-6.2-3.4L5.8 21l1.2-6.8-5-4.9 6.9-1z" fill="currentColor" />
+    </svg>
+  ),
+  Arrow: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <path d="M12 5v14m7-7-7 7-7-7" stroke="currentColor" strokeWidth="2" fill="none" />
+    </svg>
+  ),
+  Users: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" fill="none" />
+        <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" fill="none" />
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" strokeWidth="2" fill="none" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" fill="none" />
+    </svg>
+  ),
+  LogOut: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" strokeWidth="2" fill="none" />
+        <polyline points="16 17 21 12 16 7" stroke="currentColor" strokeWidth="2" fill="none" />
+        <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" strokeWidth="2" />
+    </svg>
+  )
+};
+
+// --- TYPES & CONSTANTS ---
+const spacing = {
+  page: {
+    header: "px-4 sm:px-6 lg:px-8 py-4",
+    sidebar: "px-2 sm:px-3 py-4",
+    main: "px-4 sm:px-6 lg:px-8 py-4",
+    messages: "px-4 sm:px-6 py-4"
+  },
+  card: {
+    base: "p-4 sm:p-5 lg:p-6",
+    compact: "p-3 sm:p-4"
+  },
+  button: {
+    sm: "px-2.5 py-1.5",
+    md: "px-3 py-2",
+    lg: "px-4 py-2.5"
+  },
+  gap: {
+    xs: "gap-2",
+    sm: "gap-3",
+    md: "gap-4",
+    lg: "gap-6"
+  }
+};
+
+type SortBy = "manual" | "date" | "name" | "progress";
+type SortDir = "asc" | "desc";
+type ThemeMode = "light" | "dark" | "system";
 
 interface DashboardProps {
   globalLeads: Lead[];
@@ -33,6 +156,48 @@ interface DashboardProps {
   onRemoveUser: (userId: string) => void;
 }
 
+// Map Lead status to progress percentage
+const STATUS_PROGRESS: Record<LeadStatus, number> = {
+  'NEW': 10,
+  'CONTACTED': 30,
+  'IN_PROGRESS': 50,
+  'DOCUMENTATION': 75,
+  'COMPLETED': 100,
+  'CANCELLED': 0
+};
+
+const STATUS_COLORS: Record<LeadStatus, string> = {
+  'NEW': '#6366f1', // Indigo
+  'CONTACTED': '#0ea5e9', // Sky
+  'IN_PROGRESS': '#f59e0b', // Amber
+  'DOCUMENTATION': '#8b5cf6', // Violet
+  'COMPLETED': '#10b981', // Emerald
+  'CANCELLED': '#ef4444' // Red
+};
+
+// --- UTILS ---
+const cx = (...classes: Array<string | false | null | undefined>) => {
+  return classes.filter(Boolean).join(" ");
+};
+
+const clamp = (n: number, min: number, max: number) => Math.min(Math.max(n, min), max);
+
+const readLS = <T,>(key: string, fallback: T): T => {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const writeLS = <T,>(key: string, value: T) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {}
+};
+
+// --- COMPONENT ---
 const Dashboard: React.FC<DashboardProps> = ({ 
   globalLeads, 
   onUpdateLead, 
@@ -42,14 +207,39 @@ const Dashboard: React.FC<DashboardProps> = ({
 }) => {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  // VIEW STATE
+  const [viewMode, setViewMode] = useState<"grid" | "list">(readLS("d_view", "grid"));
+  const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<'leads' | 'users'>('leads');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [isMessagesOpen, setIsMessagesOpen] = useState(false);
   
-  // Modal states
+  // ADD USER STATE
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
-  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
-  const [newUser, setNewUser] = useState({ name: '', email: '', role: 'EMPLOYEE' as UserRole });
+  const [newUserDraft, setNewUserDraft] = useState<{name: string, email: string, role: UserRole}>({
+      name: '',
+      email: '',
+      role: 'EMPLOYEE'
+  });
+
+  // DELETE USER STATE
+  const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
+  
+  // SORT & FILTER
+  const [sortBy, setSortBy] = useState<SortBy>("date");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  // EDITING STATE
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [detailItem, setDetailItem] = useState<any | null>(null);
+  
+  // VIRTUALIZATION
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+
+  // THEME
+  const [theme, setTheme] = useState<ThemeMode>(readLS("d_theme", "light"));
 
   useEffect(() => {
     const userJson = localStorage.getItem('user');
@@ -58,308 +248,605 @@ const Dashboard: React.FC<DashboardProps> = ({
       return;
     }
     setCurrentUser(JSON.parse(userJson));
-
-    const handleResize = () => {
-      if (window.innerWidth < 1024) setIsSidebarVisible(false);
-      else setIsSidebarVisible(true);
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
   }, [navigate]);
+
+  useEffect(() => {
+    writeLS("d_view", viewMode);
+  }, [viewMode]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    writeLS("d_theme", theme);
+  }, [theme]);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
     navigate('/login');
   };
 
-  const updateStatus = (leadId: string, status: LeadStatus) => {
-    const lead = globalLeads.find(l => l.id === leadId);
-    if (lead) {
-      const updated = { ...lead, status, updatedAt: new Date().toISOString() };
-      onUpdateLead(updated);
-      if (selectedLead?.id === leadId) setSelectedLead(updated);
-    }
-  };
+  // --- DATA PREPARATION ---
+  const preparedData = useMemo(() => {
+    let data = activeTab === 'leads' ? [...globalLeads] : [...globalUsers];
 
-  const assignLead = (leadId: string, userId: string) => {
-    const lead = globalLeads.find(l => l.id === leadId);
-    if (lead) {
-      const updated = { 
-        ...lead, 
-        assignedTo: userId === 'unassigned' ? undefined : userId, 
-        updatedAt: new Date().toISOString() 
-      };
-      onUpdateLead(updated);
-      if (selectedLead?.id === leadId) setSelectedLead(updated);
+    // Search
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      data = data.filter(item => 
+        item.name.toLowerCase().includes(q) || 
+        (item as Lead).email?.toLowerCase().includes(q)
+      );
     }
-  };
 
-  const handleAddUserSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newUser.name || !newUser.email) return;
-    onAddUser(newUser);
-    setNewUser({ name: '', email: '', role: 'EMPLOYEE' });
-    setIsAddUserModalOpen(false);
-  };
-
-  const filteredLeads = globalLeads.filter(l => {
-    const query = searchQuery.toLowerCase();
-    const matchesSearch = l.name.toLowerCase().includes(query) || 
-                         l.email.toLowerCase().includes(query) ||
-                         l.service.toLowerCase().includes(query) ||
-                         l.phone.includes(searchQuery);
-    
-    if (currentUser?.role === 'EMPLOYEE') {
-      return matchesSearch && l.assignedTo === currentUser.id;
+    // Filter
+    if (activeTab === 'leads' && statusFilter !== 'all') {
+      data = (data as Lead[]).filter(l => l.status === statusFilter);
     }
-    return matchesSearch;
-  });
 
-  const getStatusColor = (status: LeadStatus) => {
-    switch (status) {
-      case 'NEW': return 'bg-blue-50 text-blue-600 border-blue-100';
-      case 'IN_PROGRESS': return 'bg-yellow-50 text-yellow-600 border-yellow-100';
-      case 'COMPLETED': return 'bg-green-50 text-green-600 border-green-100';
-      case 'CANCELLED': return 'bg-red-50 text-red-600 border-red-100';
-      default: return 'bg-gray-50 text-gray-600 border-gray-100';
+    // Sort
+    data.sort((a, b) => {
+      let cmp = 0;
+      if (sortBy === 'name') cmp = a.name.localeCompare(b.name);
+      if (sortBy === 'date' && 'createdAt' in a) cmp = new Date((a as Lead).createdAt).getTime() - new Date((b as Lead).createdAt).getTime();
+      if (sortBy === 'progress' && 'status' in a) {
+         cmp = STATUS_PROGRESS[(a as Lead).status] - STATUS_PROGRESS[(b as Lead).status];
+      }
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+
+    return data;
+  }, [globalLeads, globalUsers, activeTab, searchQuery, statusFilter, sortBy, sortDir]);
+
+  // --- STATS ---
+  const stats = useMemo(() => {
+    if (activeTab === 'users') {
+        return [
+            { label: 'Total Experts', value: globalUsers.length },
+            { label: 'Admins', value: globalUsers.filter(u => u.role !== 'EMPLOYEE').length },
+            { label: 'Employees', value: globalUsers.filter(u => u.role === 'EMPLOYEE').length },
+        ];
     }
-  };
+    const total = globalLeads.length;
+    const completed = globalLeads.filter(l => l.status === 'COMPLETED').length;
+    const active = total - completed;
+    return [
+      { label: 'Active Cases', value: active },
+      { label: 'Completed', value: completed },
+      { label: 'Total Inquiries', value: total },
+    ];
+  }, [globalLeads, globalUsers, activeTab]);
 
   const isAdmin = currentUser?.role === 'HEAD_ADMIN' || currentUser?.role === 'ADMIN';
+
+  // --- ACTIONS ---
+  const handleUpdateStatus = (leadId: string, newStatus: LeadStatus) => {
+    const lead = globalLeads.find(l => l.id === leadId);
+    if (lead) onUpdateLead({ ...lead, status: newStatus, updatedAt: new Date().toISOString() });
+    setDetailItem(null); // Close modal
+  };
+
+  const handleAssignUser = (leadId: string, userId: string) => {
+    const lead = globalLeads.find(l => l.id === leadId);
+    if (lead) onUpdateLead({ ...lead, assignedTo: userId, updatedAt: new Date().toISOString() });
+  };
+
+  const confirmDeleteUser = () => {
+      if (deleteConfirmationId) {
+        onRemoveUser(deleteConfirmationId);
+        setDeleteConfirmationId(null);
+      }
+  };
+
+  const handleCreateUser = (e: React.FormEvent) => {
+    e.preventDefault();
+    if(newUserDraft.name && newUserDraft.email) {
+        onAddUser(newUserDraft);
+        setIsAddUserModalOpen(false);
+        setNewUserDraft({ name: '', email: '', role: 'EMPLOYEE' });
+    }
+  };
+
+  // --- MOCK MESSAGES ---
+  const messages = [
+    { id: 'm1', name: 'System', text: 'Welcome to LSI Portal 2.0', time: 'Just now', avatar: 'https://ui-avatars.com/api/?name=System&background=000&color=fff' },
+    { id: 'm2', name: 'Compliance Team', text: 'New FSSAI guidelines updated.', time: '2h ago', avatar: 'https://ui-avatars.com/api/?name=CT&background=random' },
+  ];
 
   if (!currentUser) return null;
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] flex animate-in fade-in duration-700 relative overflow-hidden">
+    <div className={cx("pd-container flex flex-col h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300")}>
       
-      {/* LEAD DETAIL MODAL - TRIGGERED BY CIRCULAR BUTTON */}
-      {selectedLead && (
-        <div className="fixed inset-0 z-[250] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="bg-white rounded-[3.5rem] w-full max-w-2xl p-10 md:p-14 shadow-2xl relative overflow-hidden">
-             <div className="absolute top-0 left-0 w-full h-3 bg-black" />
-             
-             <button 
-              onClick={() => setSelectedLead(null)}
-              className="absolute top-10 right-10 p-3 hover:bg-gray-100 rounded-full transition-all hover:rotate-90"
-            >
-              <X size={20} />
-            </button>
-
-            <div className="mb-10">
-              <div className="flex items-center gap-8 mb-10">
-                <div className="w-20 h-20 bg-black text-white rounded-3xl flex items-center justify-center font-bold text-3xl shadow-xl">
-                  {selectedLead.name.charAt(0)}
-                </div>
-                <div>
-                   <h2 className="text-3xl font-black tracking-tighter mb-2 text-[#0B0B0B]">{selectedLead.name}</h2>
-                   <div className="flex items-center gap-3">
-                     <span className={`text-[9px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full border ${getStatusColor(selectedLead.status)}`}>
-                       {selectedLead.status.replace('_', ' ')}
-                     </span>
-                     <span className="text-gray-200">/</span>
-                     <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">{selectedLead.service}</p>
-                   </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-gray-50/50 p-10 rounded-[2.5rem] border border-gray-100">
-                 <div className="space-y-8">
-                    <div>
-                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-3">Mobile ID</label>
-                      <a href={`tel:${selectedLead.phone}`} className="flex items-center gap-4 text-xl font-bold text-black hover:text-blue-600 transition-colors group">
-                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-gray-100 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                          <Phone size={18} />
-                        </div>
-                        {selectedLead.phone}
-                      </a>
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-3">Email Gateway</label>
-                      <a href={`mailto:${selectedLead.email}`} className="flex items-center gap-4 text-lg font-bold text-black truncate">
-                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-gray-100">
-                          <Mail size={18} />
-                        </div>
-                        {selectedLead.email}
-                      </a>
-                    </div>
-                 </div>
-                 <div className="space-y-8">
-                    <div>
-                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-3">Inquiry Created</label>
-                      <div className="flex items-center gap-4 text-xl font-bold text-black">
-                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-gray-100">
-                          <Calendar size={18} />
-                        </div>
-                        {new Date(selectedLead.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-3">Internal ID</label>
-                      <div className="flex items-center gap-4 text-xl font-bold text-black/30">
-                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-gray-100">
-                          <Hash size={18} />
-                        </div>
-                        {selectedLead.id.slice(0, 8)}
-                      </div>
-                    </div>
-                 </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-               {isAdmin && (
-                  <div className="space-y-4">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1">Case Assignment</label>
-                    <select 
-                      value={selectedLead.assignedTo || 'unassigned'}
-                      onChange={(e) => assignLead(selectedLead.id, e.target.value)}
-                      className="w-full p-5 bg-gray-50 border-none rounded-2xl text-[11px] font-black uppercase tracking-widest outline-none transition-all cursor-pointer"
-                    >
-                      <option value="unassigned">-- Select Expert --</option>
-                      {globalUsers.filter(u => u.role !== 'HEAD_ADMIN').map(user => (
-                        <option key={user.id} value={user.id}>{user.name}</option>
-                      ))}
-                    </select>
-                  </div>
-               )}
-               <div className="space-y-4">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1">Update Status</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {['NEW', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map((s) => (
-                      <button 
-                        key={s}
-                        onClick={() => updateStatus(selectedLead.id, s as LeadStatus)}
-                        className={`px-4 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
-                          selectedLead.status === s ? 'bg-black text-white shadow-xl' : 'bg-gray-50 text-gray-400'
-                        }`}
-                      >
-                        {s.replace('_', ' ')}
-                      </button>
-                    ))}
-                  </div>
-               </div>
-            </div>
+      {/* --- HEADER --- */}
+      <header className={cx(
+        "flex items-center justify-between border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 z-20",
+        spacing.page.header,
+        spacing.gap.sm
+      )}>
+        <div className={cx("flex items-center min-w-0", spacing.gap.sm)}>
+          <span className="inline-flex size-10 items-center justify-center rounded-lg bg-black text-white shrink-0">
+            <Icons.Logo className="size-5" />
+          </span>
+          <div>
+            <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100 truncate leading-tight">
+              LSI COMMAND
+            </h1>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                {activeTab === 'leads' ? 'Pipeline View' : 'Team View'}
+            </p>
           </div>
+
+          <label className={cx(
+            "hidden md:flex items-center rounded-lg bg-slate-50 dark:bg-slate-800",
+            "ring-1 ring-slate-200 dark:ring-slate-700 px-3 py-2 ml-8 w-64",
+            spacing.gap.xs
+          )}>
+            <Icons.Search className="size-4 text-slate-500 dark:text-slate-400" />
+            <input
+              className="bg-transparent placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none text-sm w-full"
+              placeholder="Search leads, emails..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </label>
+        </div>
+
+        <div className={cx("flex items-center", spacing.gap.xs)}>
+          <button
+            onClick={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
+            className={cx(
+              "rounded-lg ring-1 ring-slate-200 dark:ring-slate-700",
+              "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200",
+              "hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors",
+              "p-2"
+            )}
+          >
+            <Icons.Theme className="size-5" />
+          </button>
+
+          <button
+            onClick={() => setIsMessagesOpen(!isMessagesOpen)}
+            className={cx(
+              "rounded-lg ring-1 ring-slate-200 dark:ring-slate-700 relative",
+              "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200",
+              "hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors",
+              "p-2"
+            )}
+          >
+            <Icons.Bell className="size-5" />
+            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+          </button>
+
+          <div className="h-8 w-px bg-slate-200 dark:bg-slate-700 mx-2"></div>
+
+          <button className="flex items-center gap-3 pl-2">
+            <img 
+              src={`https://ui-avatars.com/api/?name=${currentUser.name}&background=000&color=fff`} 
+              alt="" 
+              className="size-9 rounded-xl object-cover shadow-sm" 
+            />
+            <div className="hidden sm:block text-left">
+                <div className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-none">{currentUser.name}</div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-bold mt-1">{currentUser.role.replace('_', ' ')}</div>
+            </div>
+          </button>
+        </div>
+      </header>
+
+      <div className="flex flex-1 overflow-hidden">
+        
+        {/* --- SIDEBAR --- */}
+        <aside className={cx(
+          "hidden sm:flex flex-col items-center border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 z-10",
+          spacing.page.sidebar,
+          spacing.gap.sm
+        )}>
+          {[
+            { id: 'leads', icon: <Icons.Chart className="size-5" />, label: 'Pipeline' },
+            { id: 'users', icon: <Icons.Users className="size-5" />, label: 'Team' },
+          ].map((l) => (
+            <button
+              key={l.id}
+              onClick={() => setActiveTab(l.id as any)}
+              className={cx(
+                "size-11 inline-flex items-center justify-center rounded-xl transition-all",
+                "ring-1 ring-slate-200 dark:ring-slate-700",
+                activeTab === l.id
+                  ? "bg-black text-white dark:bg-white dark:text-black shadow-lg shadow-indigo-500/20"
+                  : "bg-white dark:bg-slate-800 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700"
+              )}
+              title={l.label}
+            >
+              {l.icon}
+            </button>
+          ))}
+          
+          <div className="flex-grow"></div>
+          
+          <button
+             onClick={handleLogout}
+             className={cx(
+                "size-11 inline-flex items-center justify-center rounded-xl transition-all",
+                "ring-1 ring-slate-200 dark:ring-slate-700 bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100"
+              )}
+              title="Logout"
+          >
+            <Icons.LogOut className="size-5" />
+          </button>
+        </aside>
+
+        {/* --- MAIN CONTENT --- */}
+        <main className={cx("flex-1 min-w-0 overflow-hidden flex flex-col bg-slate-50 dark:bg-slate-900", spacing.page.main)}>
+           
+           {/* Controls Bar */}
+           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+              {/* Stats Row */}
+              <div className={cx("flex flex-wrap items-center", spacing.gap.md)}>
+                 {stats.map((s, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                       <span className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">{s.value}</span>
+                       <span className="text-xs font-bold uppercase tracking-wider text-slate-400">{s.label}</span>
+                       {i < stats.length - 1 && <div className="h-8 w-px bg-slate-200 dark:bg-slate-700 mx-2"></div>}
+                    </div>
+                 ))}
+              </div>
+
+              {/* Filters */}
+              <div className={cx("flex items-center", spacing.gap.xs)}>
+                 {activeTab === 'leads' && (
+                   <select 
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className={cx("rounded-lg ring-1 ring-slate-200 dark:ring-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-medium", spacing.button.sm)}
+                   >
+                      <option value="all">All Status</option>
+                      {Object.keys(STATUS_COLORS).map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
+                   </select>
+                 )}
+
+                 {activeTab === 'users' && isAdmin && (
+                    <button 
+                      onClick={() => setIsAddUserModalOpen(true)}
+                      className={cx(
+                        "rounded-lg bg-black text-white dark:bg-white dark:text-black font-bold text-xs uppercase tracking-wider shadow-lg hover:opacity-90 transition-all flex items-center gap-2", 
+                        spacing.button.md
+                      )}
+                    >
+                      <Icons.Plus className="size-4" />
+                      <span className="hidden sm:inline">Add Expert</span>
+                    </button>
+                 )}
+
+                 <div className="inline-flex rounded-lg ring-1 ring-slate-200 dark:ring-slate-700 bg-white dark:bg-slate-800 p-1">
+                    <button 
+                      onClick={() => setViewMode("list")}
+                      className={cx(
+                        "p-1.5 rounded-md transition-colors", 
+                        viewMode === "list" ? "bg-slate-100 dark:bg-slate-700 text-black dark:text-white" : "text-slate-400"
+                      )}
+                    >
+                      <Icons.List className="size-4" />
+                    </button>
+                    <button 
+                      onClick={() => setViewMode("grid")}
+                      className={cx(
+                        "p-1.5 rounded-md transition-colors", 
+                        viewMode === "grid" ? "bg-slate-100 dark:bg-slate-700 text-black dark:text-white" : "text-slate-400"
+                      )}
+                    >
+                      <Icons.Grid className="size-4" />
+                    </button>
+                 </div>
+              </div>
+           </div>
+
+           {/* Content Area */}
+           <div className={cx(
+              "flex-1 overflow-y-auto pr-2",
+              viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" : "space-y-3"
+           )}>
+              {preparedData.length === 0 && (
+                 <div className="col-span-full h-64 flex flex-col items-center justify-center text-slate-400">
+                    <Icons.Search className="size-12 mb-4 opacity-20" />
+                    <p>No records found matching your criteria.</p>
+                 </div>
+              )}
+
+              {activeTab === 'leads' ? (
+                 (preparedData as Lead[]).map((lead) => (
+                    <div 
+                      key={lead.id}
+                      onClick={() => setDetailItem(lead)}
+                      className={cx(
+                         "group relative bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-indigo-500 dark:hover:border-indigo-500 transition-all cursor-pointer hover:shadow-xl",
+                         viewMode === "list" ? "p-4 flex items-center gap-6" : "p-6 flex flex-col"
+                      )}
+                    >
+                       {/* Card Header */}
+                       <div className={cx("flex justify-between items-start", viewMode === "list" ? "w-1/3" : "w-full mb-4")}>
+                          <div className="flex items-center gap-3">
+                             <div className="w-10 h-10 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-lg">
+                                {lead.name.charAt(0)}
+                             </div>
+                             <div>
+                                <h3 className="font-bold text-slate-900 dark:text-slate-100 truncate">{lead.name}</h3>
+                                <p className="text-xs text-slate-500 truncate max-w-[120px]">{lead.service}</p>
+                             </div>
+                          </div>
+                       </div>
+
+                       {/* Progress / Status */}
+                       <div className={cx(viewMode === "list" ? "flex-1 px-4" : "w-full mb-6")}>
+                          <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
+                             <span>Progress</span>
+                             <span>{STATUS_PROGRESS[lead.status]}%</span>
+                          </div>
+                          <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                             <div 
+                               className="h-full transition-all duration-500 rounded-full"
+                               style={{ width: `${STATUS_PROGRESS[lead.status]}%`, backgroundColor: STATUS_COLORS[lead.status] }}
+                             ></div>
+                          </div>
+                       </div>
+
+                       {/* Footer / Meta */}
+                       <div className={cx("flex items-center justify-between", viewMode === "list" ? "w-1/4 justify-end gap-4" : "w-full")}>
+                          <span className={cx(
+                             "text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md border",
+                             "border-slate-100 dark:border-slate-700 text-slate-500"
+                          )}>
+                             {new Date(lead.createdAt).toLocaleDateString()}
+                          </span>
+                          
+                          {/* Assigned Avatar */}
+                          <div className="flex -space-x-2">
+                             {lead.assignedTo ? (
+                                <img 
+                                  src={`https://ui-avatars.com/api/?name=${globalUsers.find(u=>u.id===lead.assignedTo)?.name || '?'}&background=random`} 
+                                  className="size-6 rounded-full border-2 border-white dark:border-slate-800" 
+                                  title="Assigned Expert"
+                                />
+                             ) : (
+                                <div className="size-6 rounded-full border-2 border-white dark:border-slate-800 bg-slate-200 flex items-center justify-center text-[8px] text-slate-500">?</div>
+                             )}
+                          </div>
+                       </div>
+                    </div>
+                 ))
+              ) : (
+                 (preparedData as User[]).map((user) => (
+                    <div 
+                       key={user.id}
+                       className={cx(
+                          "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 flex items-center justify-between group",
+                          viewMode === "list" ? "p-4" : "flex-col text-center p-8"
+                       )}
+                    >
+                       <div className={cx("flex items-center gap-4", viewMode === "grid" && "flex-col mb-4")}>
+                          <img 
+                             src={`https://ui-avatars.com/api/?name=${user.name}&background=random`} 
+                             className="size-16 rounded-2xl shadow-md"
+                          />
+                          <div className={cx(viewMode === "grid" && "text-center")}>
+                             <h3 className="font-bold text-slate-900 dark:text-slate-100">{user.name}</h3>
+                             <p className="text-xs font-bold text-indigo-500 uppercase tracking-widest mt-1">{user.role}</p>
+                             <p className="text-xs text-slate-400 mt-1">{user.email}</p>
+                          </div>
+                       </div>
+                       
+                       {isAdmin && user.role !== 'HEAD_ADMIN' && (
+                          <button 
+                             onClick={(e) => {
+                                 e.stopPropagation();
+                                 setDeleteConfirmationId(user.id);
+                             }}
+                             className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                             title="Delete User"
+                          >
+                             <Icons.Trash className="size-4" />
+                          </button>
+                       )}
+                    </div>
+                 ))
+              )}
+           </div>
+        </main>
+
+        {/* --- MESSAGES PANEL --- */}
+        <aside className={cx(
+           "w-80 border-l border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition-all duration-300 absolute right-0 h-full z-30 shadow-2xl md:relative md:shadow-none",
+           isMessagesOpen ? "translate-x-0" : "translate-x-full md:translate-x-0 md:w-80 hidden md:block"
+        )}>
+           <div className="h-full flex flex-col">
+              <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                 <h3 className="font-bold text-slate-900 dark:text-slate-100">Activity & Notices</h3>
+                 <button onClick={() => setIsMessagesOpen(false)} className="md:hidden p-2"><Icons.Close className="size-4" /></button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                 {messages.map(msg => (
+                    <div key={msg.id} className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
+                       <div className="flex items-center gap-3 mb-2">
+                          <img src={msg.avatar} className="size-6 rounded-full" />
+                          <span className="text-xs font-bold text-slate-900 dark:text-slate-100">{msg.name}</span>
+                          <span className="text-[10px] text-slate-400 ml-auto">{msg.time}</span>
+                       </div>
+                       <p className="text-sm text-slate-600 dark:text-slate-300 leading-snug">{msg.text}</p>
+                    </div>
+                 ))}
+                 <div className="p-4 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/50 text-center">
+                    <p className="text-xs text-indigo-800 dark:text-indigo-300 font-medium">All systems operational.</p>
+                 </div>
+              </div>
+           </div>
+        </aside>
+      </div>
+
+      {/* --- ADD USER MODAL --- */}
+      {isAddUserModalOpen && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-700 animate-in fade-in zoom-in duration-300">
+               <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                  <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Add Team Member</h2>
+                  <button onClick={() => setIsAddUserModalOpen(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                     <Icons.Close className="size-5 text-slate-500" />
+                  </button>
+               </div>
+               
+               <form onSubmit={handleCreateUser} className="p-6 space-y-4">
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block">Full Name</label>
+                     <input
+                        type="text"
+                        value={newUserDraft.name}
+                        onChange={(e) => setNewUserDraft({...newUserDraft, name: e.target.value})}
+                        className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-medium outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                        placeholder="John Doe"
+                        required
+                     />
+                  </div>
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block">Email Address</label>
+                     <input
+                        type="email"
+                        value={newUserDraft.email}
+                        onChange={(e) => setNewUserDraft({...newUserDraft, email: e.target.value})}
+                        className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-medium outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                        placeholder="john@legalsuccess.in"
+                        required
+                     />
+                  </div>
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block">Role</label>
+                     <select
+                        value={newUserDraft.role}
+                        onChange={(e) => setNewUserDraft({...newUserDraft, role: e.target.value as UserRole})}
+                        className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-medium outline-none focus:ring-2 focus:ring-black dark:focus:ring-white appearance-none"
+                     >
+                        <option value="EMPLOYEE">Employee</option>
+                        <option value="ADMIN">Admin</option>
+                     </select>
+                  </div>
+
+                  <button 
+                     type="submit"
+                     className="w-full bg-black dark:bg-white text-white dark:text-black py-4 rounded-xl font-bold text-sm hover:opacity-90 transition-all shadow-lg active:scale-[0.98] mt-4"
+                  >
+                     Create Account
+                  </button>
+               </form>
+            </div>
+         </div>
+      )}
+      
+      {/* --- DELETE CONFIRMATION MODAL --- */}
+      {deleteConfirmationId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl shadow-2xl p-6 ring-1 ring-slate-200 dark:ring-slate-700 animate-in fade-in zoom-in duration-200">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">Confirm Deletion</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+                    Are you sure you want to remove this expert? They will be unassigned from any active leads.
+                </p>
+                <div className="flex gap-3">
+                    <button 
+                        onClick={() => setDeleteConfirmationId(null)}
+                        className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        onClick={confirmDeleteUser}
+                        className="flex-1 px-4 py-3 rounded-xl bg-red-500 text-white font-bold text-sm hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20"
+                    >
+                        Delete
+                    </button>
+                </div>
+            </div>
         </div>
       )}
 
-      {/* SIDEBAR */}
-      <aside className={`fixed left-0 top-0 h-full bg-white border-r border-gray-100 z-[100] transition-all duration-700 ${isSidebarVisible ? 'w-80' : 'w-0 -translate-x-full'} overflow-hidden`}>
-        <div className="w-80 p-10 h-full flex flex-col">
-          <div className="mb-16 flex items-center justify-between">
-            <div className="flex flex-col">
-              <span className="font-black text-2xl tracking-tighter text-[#0B0B0B]">LSI. PORTAL</span>
-              <span className="text-[10px] font-black text-gray-300 uppercase tracking-[0.25em] mt-1">{currentUser.role.replace('_', ' ')}</span>
-            </div>
-            <button onClick={() => setIsSidebarVisible(false)} className="p-2 hover:bg-gray-50 rounded-xl transition-all text-gray-200">
-              <ChevronLeft size={20} />
-            </button>
-          </div>
-
-          <nav className="flex-grow space-y-3">
-            <button onClick={() => setActiveTab('leads')} className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.15em] transition-all ${activeTab === 'leads' ? 'bg-black text-white shadow-2xl shadow-black/10' : 'text-gray-400 hover:bg-gray-50'}`}>
-              <LayoutDashboard size={18} /> Pipeline
-            </button>
-            {isAdmin && (
-              <button onClick={() => setActiveTab('users')} className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.15em] transition-all ${activeTab === 'users' ? 'bg-black text-white shadow-2xl shadow-black/10' : 'text-gray-400 hover:bg-gray-50'}`}>
-                <Users size={18} /> Team
-              </button>
-            )}
-          </nav>
-
-          <div className="pt-10 border-t border-gray-50 mt-auto">
-            <button onClick={handleLogout} className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.15em] text-red-500 hover:bg-red-50 transition-all">
-              <LogOut size={18} /> Sign Out
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      {/* MAIN CONTENT */}
-      <main className={`flex-grow h-screen overflow-y-auto transition-all duration-700 ${isSidebarVisible ? 'pl-[320px] pr-12 pt-12' : 'px-12 md:px-24 pt-12 md:pt-32'}`}>
-        {!isSidebarVisible && (
-          <button onClick={() => setIsSidebarVisible(true)} className="fixed top-8 left-8 z-[110] p-4 bg-white border border-gray-100 rounded-2xl shadow-2xl hover:bg-black hover:text-white transition-all">
-            <Menu size={20} />
-          </button>
-        )}
-
-        <div className="max-w-7xl mx-auto pb-40">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10 mb-20">
-            <div>
-              <div className="mb-10 opacity-30"><Logo className="h-6" /></div>
-              <h1 className="text-6xl font-black tracking-tighter text-[#0B0B0B] leading-[0.9]">
-                {activeTab === 'leads' ? 'Active Pipeline' : 'Expert Network'}
-              </h1>
-              <p className="text-gray-400 mt-6 font-bold text-xl uppercase tracking-tighter">
-                {activeTab === 'leads' ? `Managing ${filteredLeads.length} live inquiries.` : `Authorized Team: ${globalUsers.length} members.`}
-              </p>
-            </div>
-            {activeTab === 'users' && currentUser.role === 'HEAD_ADMIN' && (
-              <button onClick={() => setIsAddUserModalOpen(true)} className="bg-black text-white px-10 py-5 rounded-full font-black text-[11px] uppercase tracking-widest flex items-center gap-4 hover:bg-gray-800 transition-all">
-                <UserPlus size={18} /> Add Expert
-              </button>
-            )}
-          </div>
-
-          {activeTab === 'leads' && (
-            <div className="space-y-12">
-              <div className="relative">
-                <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-gray-300" size={24} />
-                <input 
-                  type="text" 
-                  placeholder="Filter by name, phone or email gateway..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white border border-gray-100 rounded-[2.5rem] py-8 pl-20 pr-10 focus:ring-2 focus:ring-black outline-none transition-all shadow-sm text-sm font-medium"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 gap-6">
-                {filteredLeads.map((lead, idx) => (
-                  <div key={lead.id} className="bg-white border border-gray-50 rounded-[3rem] p-10 hover:shadow-2xl transition-all duration-700 flex flex-col md:flex-row items-center justify-between gap-10 group relative overflow-hidden">
-                    <div className="flex items-center gap-10 flex-grow">
-                      <div className="w-20 h-20 bg-black text-white rounded-[1.8rem] flex items-center justify-center font-bold text-3xl shadow-xl">
-                        {lead.name.charAt(0)}
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-4">
-                          <h3 className="font-black text-2xl text-[#0B0B0B] tracking-tighter">{lead.name}</h3>
-                          <span className={`text-[9px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full border ${getStatusColor(lead.status)}`}>
-                            {lead.status.replace('_', ' ')}
-                          </span>
+      {/* --- LEAD DETAIL MODAL --- */}
+      {detailItem && (activeTab === 'leads') && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-700 animate-in fade-in zoom-in duration-300">
+               <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-start bg-slate-50 dark:bg-slate-800/50">
+                  <div className="flex gap-6">
+                     <div className="w-16 h-16 bg-black text-white rounded-2xl flex items-center justify-center font-bold text-3xl shadow-lg">
+                        {(detailItem as Lead).name.charAt(0)}
+                     </div>
+                     <div>
+                        <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">{(detailItem as Lead).name}</h2>
+                        <div className="flex items-center gap-2 mt-1">
+                           <span className="text-xs font-bold text-indigo-500 uppercase tracking-widest">{(detailItem as Lead).service}</span>
+                           <span className="text-slate-300">•</span>
+                           <span className="text-xs text-slate-500">{(detailItem as Lead).phone}</span>
                         </div>
-                        <div className="flex items-center gap-4 text-gray-400 text-xs font-bold uppercase tracking-widest">
-                          <div className="flex items-center gap-2 text-black">
-                            <Phone size={14} className="opacity-30" /> {lead.phone}
-                          </div>
-                          <span>•</span>
-                          <span>{lead.service}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-12">
-                      <div className="text-right hidden md:block">
-                        <div className="text-[10px] font-black text-gray-300 uppercase tracking-widest mb-1">Created</div>
-                        <div className="text-sm font-bold text-black">{new Date(lead.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</div>
-                      </div>
-                      <button 
-                        onClick={() => setSelectedLead(lead)}
-                        className="w-16 h-16 rounded-full bg-black text-white flex items-center justify-center hover:scale-110 transition-all shadow-xl shadow-black/20"
-                      >
-                        <ChevronRight size={28} />
-                      </button>
-                    </div>
+                     </div>
                   </div>
-                ))}
-              </div>
+                  <button onClick={() => setDetailItem(null)} className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-full transition-colors"><Icons.Close className="size-5" /></button>
+               </div>
+               
+               <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Status Control */}
+                  <div className="space-y-4">
+                     <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block">Case Status</label>
+                     <div className="grid grid-cols-2 gap-2">
+                        {Object.keys(STATUS_COLORS).map(status => (
+                           <button
+                              key={status}
+                              onClick={() => handleUpdateStatus(detailItem.id, status as LeadStatus)}
+                              className={cx(
+                                 "px-3 py-2 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all border",
+                                 (detailItem as Lead).status === status 
+                                    ? "bg-black text-white border-black shadow-lg" 
+                                    : "bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-400"
+                              )}
+                           >
+                              {status.replace('_', ' ')}
+                           </button>
+                        ))}
+                     </div>
+                  </div>
+
+                  {/* Assignment Control */}
+                  {isAdmin && (
+                     <div className="space-y-4">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block">Assigned Expert</label>
+                        <select
+                           value={(detailItem as Lead).assignedTo || ''}
+                           onChange={(e) => handleAssignUser(detailItem.id, e.target.value)}
+                           className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                           <option value="">-- Unassigned --</option>
+                           {globalUsers.map(u => (
+                              <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
+                           ))}
+                        </select>
+                        <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-900/50">
+                           <p className="text-xs text-indigo-700 dark:text-indigo-300 leading-relaxed">
+                              Assigning an expert grants them full access to view and update this lead.
+                           </p>
+                        </div>
+                     </div>
+                  )}
+               </div>
+
+               <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 text-center">
+                  <p className="text-[10px] text-slate-400 uppercase tracking-widest">
+                     Lead ID: {detailItem.id} • Created: {new Date(detailItem.createdAt).toLocaleDateString()}
+                  </p>
+               </div>
             </div>
-          )}
-        </div>
-      </main>
+         </div>
+      )}
+
+      <style>{`
+        .pd-container { font-family: 'Inter', system-ui, sans-serif; }
+        .pd-container ::-webkit-scrollbar { width: 6px; }
+        .pd-container ::-webkit-scrollbar-track { background: transparent; }
+        .pd-container ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 3px; }
+        .dark .pd-container ::-webkit-scrollbar-thumb { background-color: #475569; }
+      `}</style>
     </div>
   );
-};
+}
 
 export default Dashboard;

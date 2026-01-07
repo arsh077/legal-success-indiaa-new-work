@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout.tsx';
@@ -60,10 +61,9 @@ const App: React.FC = () => {
   };
 
   const removeUser = (userId: string) => {
-    if (confirm("Revoke access for this expert?")) {
-      setUsers(prev => prev.filter(u => u.id !== userId));
-      setLeads(prev => prev.map(l => l.assignedTo === userId ? { ...l, assignedTo: undefined } : l));
-    }
+    // Confirmation is now handled in the Dashboard UI
+    setUsers(prev => prev.filter(u => u.id !== userId));
+    setLeads(prev => prev.map(l => l.assignedTo === userId ? { ...l, assignedTo: undefined } : l));
   };
 
   return (
