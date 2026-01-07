@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, ShieldCheck, RefreshCw, FileText, Check, X, BarChart3, Globe2 } from 'lucide-react';
+import { ArrowRight, ShieldCheck, RefreshCw, FileText, Check, X, BarChart3, Globe2, Phone, Mail } from 'lucide-react';
 import { SERVICES } from '../constants.tsx';
 import Logo from '../components/Logo.tsx';
 import { Lead } from '../types.ts';
@@ -219,22 +219,23 @@ const Home: React.FC<HomeProps> = ({ onFormSubmit }) => {
                 <div className="flex-1 flex flex-col justify-center p-8 sm:p-12 lg:p-16 gap-8 text-white">
                   <div className="space-y-4">
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight tracking-tight">
-                      Ready to scale?
+                      Compliance made simple.
                     </h2>
                     <p className="text-blue-100 text-lg max-w-md">
-                      Join 5,000+ forward-thinking companies building the future with Legal Success India.
+                      Get your FSSAI license and legal documentation sorted with Legal Success India.
                     </p>
                   </div>
 
                   <div className="space-y-6">
                     <div className="flex gap-4 items-start">
                       <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/10">
-                        <BarChart3 className="w-6 h-6 text-blue-200" />
+                        <Phone className="w-6 h-6 text-blue-200" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-lg">Analytics First</h3>
+                        <h3 className="font-semibold text-lg">Direct Director Support</h3>
                         <p className="text-blue-100/80 text-sm leading-relaxed mt-1">
-                          Real-time insights into your license renewal dates and compliance status.
+                          Speak directly with Arshed & Azsed Anwar.<br/>
+                          <span className="font-mono text-white/90">+91 90072 99384</span> / <span className="font-mono text-white/90">+91 62906 34766</span>
                         </p>
                       </div>
                     </div>
@@ -243,9 +244,9 @@ const Home: React.FC<HomeProps> = ({ onFormSubmit }) => {
                         <Globe2 className="w-6 h-6 text-blue-200" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-lg">Pan-India Support</h3>
+                        <h3 className="font-semibold text-lg">Pan-India Service</h3>
                         <p className="text-blue-100/80 text-sm leading-relaxed mt-1">
-                          Deploy to 28+ states instantly with our automated regulatory network.
+                          Serving clients in 28+ states from our Kolkata HQ at 22/1 Mominpore Road.
                         </p>
                       </div>
                     </div>
@@ -284,7 +285,7 @@ const Home: React.FC<HomeProps> = ({ onFormSubmit }) => {
                         </div>
                         <div>
                           <h3 className="text-2xl font-bold text-white mb-2">Request Received!</h3>
-                          <p className="text-blue-100">Our team will be in touch shortly to schedule your personalized consultation.</p>
+                          <p className="text-blue-100">Our expert team will contact you shortly on the provided number.</p>
                         </div>
                       </motion.div>
                     ) : (
@@ -305,7 +306,7 @@ const Home: React.FC<HomeProps> = ({ onFormSubmit }) => {
                               id="name"
                               value={formData.name}
                               onChange={(e) => setFormData({...formData, name: e.target.value})}
-                              placeholder="Jane Doe"
+                              placeholder="e.g. Arshed Anwar"
                               className="w-full px-4 py-3 rounded-lg bg-blue-950/40 border border-blue-300/20 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all text-sm"
                             />
                           </div>
@@ -320,7 +321,7 @@ const Home: React.FC<HomeProps> = ({ onFormSubmit }) => {
                               id="email"
                               value={formData.email}
                               onChange={(e) => setFormData({...formData, email: e.target.value})}
-                              placeholder="jane@company.com"
+                              placeholder="you@company.com"
                               className="w-full px-4 py-3 rounded-lg bg-blue-950/40 border border-blue-300/20 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all text-sm"
                             />
                           </div>
@@ -335,7 +336,7 @@ const Home: React.FC<HomeProps> = ({ onFormSubmit }) => {
                               id="phone"
                               value={formData.phone}
                               onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                              placeholder="+91 99999 99999"
+                              placeholder="+91 90000 00000"
                               className="w-full px-4 py-3 rounded-lg bg-blue-950/40 border border-blue-300/20 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all text-sm"
                             />
                           </div>
@@ -354,9 +355,10 @@ const Home: React.FC<HomeProps> = ({ onFormSubmit }) => {
                           ) : "Submit Request"}
                         </button>
                         
-                        <p className="text-xs text-center text-blue-200/60 mt-4">
-                          By submitting, you agree to our Terms of Service and Privacy Policy.
-                        </p>
+                        <div className="text-xs text-center text-blue-200/60 mt-4 space-y-1">
+                          <p>By submitting, you agree to our Terms of Service.</p>
+                          <p>For urgent inquiries: <span className="text-white hover:underline cursor-pointer">+91 90072 99384</span></p>
+                        </div>
                       </form>
                     )}
                   </div>
