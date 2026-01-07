@@ -12,8 +12,11 @@ const Pricing: React.FC = () => {
       {/* Hero */}
       <div className="pt-32 pb-20 px-6 text-center max-w-5xl mx-auto">
          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter mb-8 text-black dark:text-white flex flex-col items-center">
-            <TextRoll center>Simple, transparent</TextRoll>
-            <TextRoll center>pricing.</TextRoll>
+            <span className="block md:hidden text-center">Simple, transparent pricing.</span>
+            <div className="hidden md:flex flex-col items-center">
+               <TextRoll center>Simple, transparent</TextRoll>
+               <TextRoll center>pricing.</TextRoll>
+            </div>
          </h1>
          <p className="text-xl text-gray-500 dark:text-gray-400 leading-relaxed max-w-2xl mx-auto">
             No hidden fees. No surprises. Just clear pricing for high-quality legal compliance support.

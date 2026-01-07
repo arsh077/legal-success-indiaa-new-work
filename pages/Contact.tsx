@@ -39,7 +39,10 @@ const Contact: React.FC<ContactProps> = ({ onFormSubmit }) => {
       {/* Hero */}
       <div className="pt-32 pb-20 px-6 text-center max-w-5xl mx-auto">
          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter mb-8 text-black dark:text-white flex flex-col items-center">
-            <TextRoll center>Let's connect.</TextRoll>
+            <span className="block md:hidden">Let's connect.</span>
+            <div className="hidden md:block">
+              <TextRoll center>Let's connect.</TextRoll>
+            </div>
          </h1>
          <p className="text-xl text-gray-500 dark:text-gray-400 leading-relaxed max-w-2xl mx-auto">
             Ready to start your compliance journey? Reach out to our expert team.

@@ -10,7 +10,10 @@ const About: React.FC = () => {
       {/* Hero */}
       <div className="pt-32 pb-20 px-6 text-center max-w-5xl mx-auto">
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.1] mb-6 text-[#0B0B0B] dark:text-white flex flex-col items-center">
-          <TextRoll center>About Legal Success India.</TextRoll>
+          <span className="block md:hidden">About Legal Success India.</span>
+          <div className="hidden md:block">
+            <TextRoll center>About Legal Success India.</TextRoll>
+          </div>
         </h1>
         <h2 className="text-xl md:text-2xl font-medium text-gray-500 dark:text-zinc-400 mb-8 tracking-tight">
           Clarity in compliance. Confidence in every step.

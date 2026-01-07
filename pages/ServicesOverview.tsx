@@ -18,7 +18,10 @@ const ServicesOverview: React.FC = () => {
       {/* Hero */}
       <div className="pt-32 pb-20 px-6 text-center max-w-5xl mx-auto">
          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-8 text-black dark:text-white flex flex-col items-center">
-            <TextRoll center>Our Services.</TextRoll>
+            <span className="block md:hidden">Our Services.</span>
+            <div className="hidden md:block">
+              <TextRoll center>Our Services.</TextRoll>
+            </div>
          </h1>
          <p className="text-lg text-gray-500 dark:text-gray-400 leading-relaxed max-w-2xl mx-auto">
             From registration to ongoing compliance, we offer a comprehensive suite of legal and regulatory solutions tailored for the Indian landscape.
