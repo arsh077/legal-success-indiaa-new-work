@@ -7,6 +7,7 @@ import Logo from '../components/Logo.tsx';
 import { Lead } from '../types.ts';
 import Testimonials from '../components/Testimonials.tsx';
 import { motion, AnimatePresence } from "framer-motion";
+import { TextRoll } from '../components/ui/text-roll.tsx';
 
 interface HomeProps {
   onFormSubmit: (lead: Omit<Lead, 'id' | 'status' | 'createdAt' | 'updatedAt'>) => void;
@@ -66,79 +67,111 @@ const Home: React.FC<HomeProps> = ({ onFormSubmit }) => {
   };
 
   return (
-    <div className="animate-in fade-in duration-1000">
+    <div className="animate-in fade-in duration-1000 bg-white dark:bg-zinc-950 min-h-screen">
       
-      {/* 
-        -------------------------------------------
-        NEW HERO SECTION 
-        -------------------------------------------
-      */}
-      <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-white dark:bg-zinc-950 px-4 sm:px-6 py-12 sm:py-20 transition-colors duration-500">
-        
-        {/* Simulated GodRays/Background Effect using CSS gradients */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.08)_0%,transparent_50%)] animate-pulse-slow dark:opacity-40"></div>
-          <div className="absolute top-[-20%] right-[-20%] w-[100%] h-[100%] bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.08)_0%,transparent_50%)] animate-float-slow dark:opacity-30"></div>
+      {/* Hero Section with TextRoll */}
+      <div className="relative pt-32 pb-20 px-6 max-w-7xl mx-auto text-center flex flex-col items-center">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="inline-flex items-center rounded-full border border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50 px-3 py-1 text-sm font-medium text-zinc-800 dark:text-zinc-200 backdrop-blur-sm mb-8"
+        >
+          <span className="flex h-2 w-2 rounded-full bg-blue-600 mr-2"></span>
+          New: 2024 Compliance Report
+        </motion.div>
+
+        <div className="mb-8">
+            <TextRoll center className="text-5xl md:text-7xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 leading-tight">
+              Orchestrate your entire
+            </TextRoll>
+            <TextRoll center className="text-5xl md:text-7xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 leading-tight">
+               compliance engine
+            </TextRoll>
         </div>
 
-        <div className="relative z-10 flex flex-col items-center gap-6 sm:gap-8 text-center">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center rounded-full border border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50 px-3 py-1 text-sm font-medium text-zinc-800 dark:text-zinc-200 backdrop-blur-sm"
-          >
-            <span className="flex h-2 w-2 rounded-full bg-blue-600 mr-2"></span>
-            New: 2024 Compliance Report
-          </motion.div>
+        <motion.p 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="text-base sm:text-lg md:text-xl text-zinc-600 dark:text-zinc-400 max-w-2xl px-4 leading-relaxed font-medium mb-10"
+        >
+          Stop wrestling with disconnected documents. Legal Success India provides the infrastructure to build, 
+          measure, and scale your business compliance with enterprise-grade security.
+        </motion.p>
+          
+        <div className="mt-2">
+            <button
+              onClick={handleExpand}
+              className="bg-black dark:bg-white text-white dark:text-black px-8 py-4 rounded-full font-bold text-lg hover:scale-105 transition-transform flex items-center gap-2"
+            >
+              Start your journey <ArrowRight className="w-5 h-5" />
+            </button>
+        </div>
+      </div>
 
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 max-w-4xl"
-          >
-            Orchestrate your entire <br className="hidden sm:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
-              compliance engine
-            </span>
-          </motion.h1>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 pb-24">
+          {/* Trust Metrics */}
+          <section className="py-10 border-y border-gray-100 dark:border-zinc-800 mb-20">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
+              {[
+                { label: 'Happy Clients', val: '5,000+' },
+                { label: 'States Served', val: '28' },
+                { label: 'Legal Experts', val: '25+' },
+                { label: 'Success Rate', val: '99%' },
+              ].map((stat, i) => (
+                <div key={i} className="text-center md:text-left">
+                  <div className="text-3xl font-bold mb-2 tracking-tighter text-black dark:text-white">{stat.val}</div>
+                  <div className="text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] font-bold">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </section>
 
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-base sm:text-lg md:text-xl text-zinc-600 dark:text-zinc-400 max-w-2xl px-4 leading-relaxed font-medium"
-          >
-            Stop wrestling with disconnected documents. Legal Success India provides the infrastructure to build, 
-            measure, and scale your business compliance with enterprise-grade security.
-          </motion.p>
+          {/* Services Grid */}
+          <section className="py-16">
+            <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div className="max-w-xl">
+                <h2 className="text-3xl font-bold tracking-tight mb-4 text-black dark:text-white">Expert compliance solutions</h2>
+                <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Focused legal and regulatory support for businesses operating across India.</p>
+              </div>
+              <Link to="/services" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] hover:gap-3 transition-all text-black dark:text-white pb-1.5 border-b-2 border-black/10 dark:border-white/10">
+                View All Services <ArrowRight size={14} />
+              </Link>
+            </div>
 
-          <AnimatePresence initial={false}>
-            {!isExpanded && (
-              <motion.div className="inline-block relative mt-4">
-                <motion.div
-                  style={{ borderRadius: "100px" }}
-                  layout
-                  layoutId="cta-card"
-                  className="absolute inset-0 bg-black dark:bg-white"
-                />
-                <motion.button
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.2 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  layout={false}
-                  onClick={handleExpand}
-                  className="relative flex items-center gap-2 h-14 px-8 py-3 text-lg font-medium text-white dark:text-black tracking-wide hover:opacity-90 transition-opacity"
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {SERVICES.map((s) => (
+                <Link 
+                  key={s.id} 
+                  to={`/services/${s.id}`} 
+                  className="group p-8 bg-gray-50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 rounded-[2rem] hover:border-black dark:hover:border-white transition-all duration-500 flex flex-col h-full"
                 >
-                  Start your journey
-                  <ArrowRight className="w-5 h-5" />
-                </motion.button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                  <div className="w-12 h-12 bg-white dark:bg-zinc-800 rounded-xl flex items-center justify-center mb-6 group-hover:bg-black group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-black transition-all duration-500 text-black dark:text-white shadow-sm">
+                    {icons[s.icon]}
+                  </div>
+                  <h3 className="text-lg font-bold mb-2 tracking-tight text-black dark:text-white">{s.title}</h3>
+                  <p className="text-gray-500 dark:text-gray-400 mb-6 leading-relaxed flex-grow text-xs font-medium">{s.shortDesc}</p>
+                  <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity text-black dark:text-white">
+                    Learn More <ArrowRight size={12} />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          {/* Testimonials Preview */}
+          <section className="py-16 border-t border-gray-100 dark:border-zinc-800 mt-16">
+              <div className="text-center mb-10">
+                <h2 className="text-3xl font-bold tracking-tight text-black dark:text-white">Trusted by industry leaders</h2>
+              </div>
+              <div className="flex justify-center">
+                <div className="scale-75 origin-top">
+                    <Testimonials />
+                </div>
+              </div>
+          </section>
       </div>
 
       {/* 
@@ -333,82 +366,6 @@ const Home: React.FC<HomeProps> = ({ onFormSubmit }) => {
           </div>
         )}
       </AnimatePresence>
-
-      {/* Trust Metrics */}
-      <section className="border-y border-gray-100 dark:border-zinc-800 py-16 px-6 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12">
-          {[
-            { label: 'Happy Clients', val: '5,000+' },
-            { label: 'States Served', val: '28' },
-            { label: 'Legal Experts', val: '25+' },
-            { label: 'Success Rate', val: '99%' },
-          ].map((stat, i) => (
-            <div key={i} className="text-center md:text-left animate-in fade-in slide-in-from-bottom-2" style={{ animationDelay: `${i * 100}ms` }}>
-              <div className="text-3xl font-bold mb-2 tracking-tighter text-black dark:text-white">{stat.val}</div>
-              <div className="text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] font-bold">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Services Grid */}
-      <section className="py-24 px-6 bg-transparent">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="max-w-xl">
-              <h2 className="text-2xl md:text-4xl font-bold tracking-tight mb-4 text-black dark:text-white">Expert compliance solutions</h2>
-              <p className="text-gray-500 dark:text-gray-400 text-base font-medium">Focused legal and regulatory support for businesses operating across India.</p>
-            </div>
-            <Link to="/services" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] hover:gap-3 transition-all text-black dark:text-white pb-1.5 border-b-2 border-black/10 dark:border-white/10">
-              View All Services <ArrowRight size={14} />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {SERVICES.map((s) => (
-              <Link 
-                key={s.id} 
-                to={`/services/${s.id}`} 
-                className="group p-10 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-md border border-gray-100 dark:border-zinc-800 rounded-[2.5rem] hover:border-black dark:hover:border-white transition-all duration-700 flex flex-col h-full hover:shadow-xl hover:shadow-black/5"
-              >
-                <div className="w-12 h-12 bg-gray-50 dark:bg-zinc-800 rounded-xl flex items-center justify-center mb-8 group-hover:bg-black group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-black transition-all duration-500 text-black dark:text-white">
-                  {icons[s.icon]}
-                </div>
-                <h3 className="text-xl font-bold mb-4 tracking-tight text-black dark:text-white">{s.title}</h3>
-                <p className="text-gray-500 dark:text-gray-400 mb-8 leading-relaxed flex-grow text-sm font-medium">{s.shortDesc}</p>
-                <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity text-black dark:text-white">
-                  Learn More <ArrowRight size={12} />
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* TESTIMONIALS SECTION */}
-      <section className="py-24 px-6 overflow-hidden">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-16">
-          <div className="max-w-md">
-            <div className="inline-block px-3 py-1 bg-gray-50 dark:bg-zinc-900 text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-6 rounded-full border border-gray-100 dark:border-zinc-800">Social Proof</div>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-6 text-black dark:text-white leading-[1.1]">
-              Trusted by <br />
-              <span className="text-gray-300 dark:text-zinc-700">industry leaders.</span>
-            </h2>
-            <p className="text-gray-500 dark:text-gray-400 text-base font-medium mb-10 leading-relaxed">
-              Join 5,000+ businesses who rely on Legal Success India for their compliance, renewals, and legal structuring.
-            </p>
-            <Link 
-              to="/about" 
-              className="inline-flex items-center gap-3 text-sm font-bold text-black dark:text-white hover:gap-4 transition-all"
-            >
-              Read Success Stories <ArrowRight size={18} />
-            </Link>
-          </div>
-          <div className="w-full md:w-auto flex justify-center perspective-1000">
-             <Testimonials />
-          </div>
-        </div>
-      </section>
     </div>
   );
 };
